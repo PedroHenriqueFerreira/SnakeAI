@@ -1,6 +1,6 @@
 from tkinter import Tk, Canvas, Frame, Label, StringVar
 
-from config import RECORD_SCORE_TEXT, BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT
+from config import BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT
 from config import CANVAS_SIZE, WINDOW_GRID_X, WINDOW_GRID_Y
 from config import DARK_COLOR, FONT_CONFIG, TEXT_PADDING
 
@@ -18,12 +18,12 @@ class Main:
         header = Frame(root)
         header.grid(row=0, column=0)
 
-        record_score = StringVar(value=RECORD_SCORE_TEXT)
         best_score = StringVar(value=BEST_SCORE_TEXT)
+        current_best_score = StringVar(value=CURRENT_BEST_SCORE_TEXT)
         current_alive = StringVar(value=CURRENT_ALIVE_TEXT)
         current_generation = StringVar(value=GENERATION_TEXT)
 
-        for i, text in enumerate([record_score, best_score, current_alive, current_generation]):
+        for i, text in enumerate([best_score, current_best_score, current_alive, current_generation]):
             Label(header, textvariable=text, font=FONT_CONFIG, padx=TEXT_PADDING, fg=DARK_COLOR).grid(row=0, column=i)
         
         main = Frame(
@@ -38,11 +38,11 @@ class Main:
         for x in range(WINDOW_GRID_X):
             for y in range(WINDOW_GRID_Y):
                 canvas = Canvas(main, width=CANVAS_SIZE, height=CANVAS_SIZE)
-                canvas.grid(row=x, column=y, padx=0, pady=0)
+                canvas.grid(row=x, column=y)
 
                 snake_games.append(SnakeGame(win, canvas, True))
 
-        Manager(snake_games, record_score, best_score, current_alive, current_generation)
+        Manager(snake_games, best_score, current_best_score, current_alive, current_generation)
 
         self.center_win(win)
 

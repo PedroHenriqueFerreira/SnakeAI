@@ -4,7 +4,6 @@ from my_types import Coord
 from config import FOOD_COLOR
 from random import choice
 
-
 class Food:
     def __init__(self, game, canvas: Canvas):
         self.canvas = canvas

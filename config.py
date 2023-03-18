@@ -1,8 +1,8 @@
-WINDOW_GRID_X = 9
-WINDOW_GRID_Y = 18
+WINDOW_GRID_X = 4
+WINDOW_GRID_Y = 8
 
 CANVAS_GRID_SIZE = 20
-CANVAS_SIZE = 100
+CANVAS_SIZE = 200
 PIXEL_SIZE = int(CANVAS_SIZE / CANVAS_GRID_SIZE)
 
 FONT_CONFIG = ('Minecraft', int(CANVAS_SIZE / 10))
@@ -10,6 +10,8 @@ FONT_CONFIG = ('Minecraft', int(CANVAS_SIZE / 10))
 TEXT_PADDING = 10
 
 SPEED = 100
+
+ENERGY = int((CANVAS_GRID_SIZE ** 2) / 3)
 
 SNAKE_COLORS = ['#3A29A8', '#4430BE']
 BG_COLORS = ['#7ECE6A', '#87D973']
@@ -25,7 +27,7 @@ STEP = 3
 
 FILE_SAVE_PATH = 'save'
 
-RECORD_SCORE_TEXT = 'Melhor pontuacao recorde: 0'
-BEST_SCORE_TEXT = 'Melhor pontuacao atual: 0'   
+BEST_SCORE_TEXT = 'Melhor pontuacao recorde: 0'
+CURRENT_BEST_SCORE_TEXT = 'Melhor pontuacao atual: 0'   
 CURRENT_ALIVE_TEXT = 'Individuos vivos: 0'      
 GENERATION_TEXT = 'Geracao atual: 0'

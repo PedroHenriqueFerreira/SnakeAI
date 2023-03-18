@@ -6,7 +6,7 @@ from utils import Utils
 
 from my_types import Coord
 
-from config import CANVAS_GRID_SIZE, CANVAS_SIZE, SPEED, FONT_CONFIG
+from config import CANVAS_GRID_SIZE, CANVAS_SIZE, SPEED, FONT_CONFIG, ENERGY
 from config import INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZES, OUTPUT_LAYER_SIZE
 from config import BG_COLORS, DARK_COLOR, MESSAGE_COLOR
 
@@ -22,7 +22,7 @@ class SnakeGame:
 
         self.create_bg()
 
-        self.energy = 0
+        self.energy = ENERGY
 
         self.snake = Snake(canvas)
         self.food = Food(self, canvas)
@@ -44,7 +44,7 @@ class SnakeGame:
 
     def start(self):
         self.is_paused = False
-        self.energy = CANVAS_GRID_SIZE ** 2
+        self.energy = ENERGY
 
         self.remove_message()
 
@@ -79,8 +79,8 @@ class SnakeGame:
 
         isBodyColiding = snakeHeadCoord in self.snake.coords[:-1]
         isWallColiding = -1 in snakeHeadCoord or CANVAS_GRID_SIZE in snakeHeadCoord
-
-        if isBodyColiding or isWallColiding:
+        
+        if isBodyColiding or isWallColiding or self.energy == 0:
             return self.on_game_over()
         elif len(self.snake.coords) == CANVAS_GRID_SIZE ** 2:
             return self.on_finish()
@@ -91,9 +91,6 @@ class SnakeGame:
         else:
             self.snake.remove_coord()
             self.energy -= 1
-            
-            if (self.energy == 0):
-                return self.on_game_over()
         
         self.canvas.after(SPEED, self.move)
 
