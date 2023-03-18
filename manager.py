@@ -96,6 +96,7 @@ class Manager:
             self.update_generation(self.generation + 1)
             
             self.sort_best_players()
+            self.save_best_players()
             self.generate_mutations()
         
             for snake_game in self.snake_games:
@@ -137,8 +138,6 @@ class Manager:
         self.snake_games.sort(key=getScore, reverse=True)
 
     def generate_mutations(self):
-        self.save_best_players()
-        
         for i, snake_game in enumerate(self.snake_games[STEP:]):
             best_game_index = i % STEP
             dna = self.snake_games[best_game_index].brain.get_DNA()

@@ -1,8 +1,8 @@
 from tkinter import Tk, Canvas, Frame, Label, StringVar
 
 from config import RECORD_SCORE_TEXT, BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT
-from config import CANVAS_SIZE, WINDOW_GRID_X, WINDOW_GRID_Y, FONT_CONFIG, TEXT_PADDING
-from config import DARK_COLOR
+from config import CANVAS_SIZE, WINDOW_GRID_X, WINDOW_GRID_Y
+from config import DARK_COLOR, FONT_CONFIG, TEXT_PADDING
 
 from snake_game import SnakeGame
 from manager import Manager
@@ -34,7 +34,7 @@ class Main:
         main.grid(row=1, column=0)
 
         snake_games: list[SnakeGame] = []
-
+        
         for x in range(WINDOW_GRID_X):
             for y in range(WINDOW_GRID_Y):
                 canvas = Canvas(main, width=CANVAS_SIZE, height=CANVAS_SIZE)
