@@ -22,6 +22,8 @@ class SnakeGame:
 
         self.create_bg()
 
+        self.energy = 0
+
         self.snake = Snake(canvas)
         self.food = Food(self, canvas)
 
@@ -42,6 +44,7 @@ class SnakeGame:
 
     def start(self):
         self.is_paused = False
+        self.energy = CANVAS_GRID_SIZE ** 2
 
         self.remove_message()
 
@@ -61,32 +64,37 @@ class SnakeGame:
         self.create_message('Parabens!')
 
     def move(self):
-        snakeCoord = self.snake.coords[-1][:]
+        snakeHeadCoord = self.snake.coords[-1][:]
 
         if (self.snake.direction == 'up'):
-            snakeCoord[1] -= 1
+            snakeHeadCoord[1] -= 1
         elif (self.snake.direction == 'down'):
-            snakeCoord[1] += 1
+            snakeHeadCoord[1] += 1
         elif (self.snake.direction == 'left'):
-            snakeCoord[0] -= 1
+            snakeHeadCoord[0] -= 1
         elif (self.snake.direction == 'right'):
-            snakeCoord[0] += 1
+            snakeHeadCoord[0] += 1
 
-        self.snake.add_coord(snakeCoord)
+        self.snake.add_coord(snakeHeadCoord)
 
-        isBodyColiding = snakeCoord in self.snake.coords[:-1]
-        isWallColiding = -1 in snakeCoord or CANVAS_GRID_SIZE in snakeCoord
+        isBodyColiding = snakeHeadCoord in self.snake.coords[:-1]
+        isWallColiding = -1 in snakeHeadCoord or CANVAS_GRID_SIZE in snakeHeadCoord
 
-        if snakeCoord == self.food.coord:
-            self.food.move_coord()
-            self.snake.score += 1
-        elif isBodyColiding or isWallColiding:
+        if isBodyColiding or isWallColiding:
             return self.on_game_over()
         elif len(self.snake.coords) == CANVAS_GRID_SIZE ** 2:
             return self.on_finish()
+        elif snakeHeadCoord == self.food.coord:
+            self.food.move_coord()
+            self.energy = CANVAS_GRID_SIZE ** 2
+            self.snake.score += 1
         else:
             self.snake.remove_coord()
-
+            self.energy -= 1
+            
+            if (self.energy == 0):
+                return self.on_game_over()
+        
         self.canvas.after(SPEED, self.move)
 
     def get_available_coords(self):
@@ -132,3 +140,25 @@ class SnakeGame:
         foodCoord = self.food.coord if self.food.coord is not None else [0, 0]
         
         return [foodCoord[i] - self.snake.coords[-1][i] for i in range(2)]
+
+    def get_close_objects(self):
+        snakeHeadCoord = self.snake.coords[-1]
+        objects = []
+        
+        for x in range(3):
+            for y in range(3):
+                coord = [snakeHeadCoord[0] + x - 1, snakeHeadCoord[1] + y - 1]
+
+                if coord == snakeHeadCoord:
+                    continue
+                
+                if -1 in coord or CANVAS_GRID_SIZE in coord:
+                    objects.append(-1)
+                elif coord in self.snake.coords:
+                    objects.append(1)
+                elif coord == self.food.coord:
+                    objects.append(2)
+                else:
+                    objects.append(0)
+        
+        return objects

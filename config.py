@@ -17,7 +17,7 @@ FOOD_COLOR = '#BE3049'
 DARK_COLOR = '#373737'
 MESSAGE_COLOR = '#FFF'
 
-INPUT_LAYER_SIZE = 2
+INPUT_LAYER_SIZE = 10
 HIDDEN_LAYER_SIZES = [5, 5]
 OUTPUT_LAYER_SIZE = 4
 
@@ -25,7 +25,7 @@ STEP = 3
 
 FILE_SAVE_PATH = 'save'
 
-RECORD_SCORE_TEXT = 'Pontuacao recorde: 0'
+RECORD_SCORE_TEXT = 'Melhor pontuacao recorde: 0'
 BEST_SCORE_TEXT = 'Melhor pontuacao atual: 0'   
 CURRENT_ALIVE_TEXT = 'Individuos vivos: 0'      
 GENERATION_TEXT = 'Geracao atual: 0'
