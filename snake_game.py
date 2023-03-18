@@ -8,10 +8,10 @@ from my_types import Coord
 
 from config import CANVAS_GRID_SIZE, CANVAS_SIZE, SPEED, FONT_CONFIG
 from config import INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZES, OUTPUT_LAYER_SIZE
-from config import BG_COLORS, MESSAGE_BG_COLOR, MESSAGE_COLOR
+from config import BG_COLORS, DARK_COLOR, MESSAGE_COLOR
 
 class SnakeGame:
-    def __init__(self, win: Tk, canvas: Canvas):
+    def __init__(self, win: Tk, canvas: Canvas, is_ai: bool = False):
         self.canvas = canvas
 
         self.brain = NeuralNetwork(
@@ -30,7 +30,9 @@ class SnakeGame:
         self.create_message('Jogar Snake')
 
         keys = ['<Up>', '<Right>', '<Down>', '<Left>', 'w', 'd', 's', 'a']
-        for key in keys: win.bind(key, self.key_event) 
+        
+        if not is_ai:
+            for key in keys: win.bind(key, self.key_event) 
 
     def key_event(self, event: Event):
         self.snake.change_direction(event.keysym)
@@ -112,7 +114,7 @@ class SnakeGame:
                 Utils.create_rectangle(self.canvas, [x, y], BG_COLORS[1], 'bg')
 
     def create_message(self, text: str):
-        Utils.create_full_rectangle(self.canvas, MESSAGE_BG_COLOR, 'message')
+        Utils.create_full_rectangle(self.canvas, DARK_COLOR, 'message')
 
         self.canvas.create_text(
             CANVAS_SIZE / 2,

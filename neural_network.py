@@ -1,5 +1,5 @@
+from my_types import DNA
 from abc import ABC
-from random import randint
 
 BIAS = 1
 
@@ -76,7 +76,7 @@ class NeuralNetwork(Default):
         return input_layer, hidden_layers, output_layer
 
     def get_DNA(self):
-        dna: list[float] = []
+        dna: DNA = []
 
         for layer in self.hidden_layers:
             for neuron in layer.neurons:
@@ -89,7 +89,7 @@ class NeuralNetwork(Default):
 
         return dna
 
-    def set_DNA(self, dna: list[float]):
+    def set_DNA(self, dna: DNA):
         dnaIndex = 0
 
         for layer in self.hidden_layers:
