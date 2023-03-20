@@ -1,8 +1,8 @@
 from tkinter import Canvas
-from utils import Utils
-from my_types import Coord, Direction
-from config import CANVAS_GRID_SIZE, SNAKE_COLORS
+from snake_game.UI import UI
 
+from snake_game.custom_types import Coord, Direction
+from snake_game.config import GAME_GRID, SNAKE_COLORS
 
 class Snake:
     def __init__(self, canvas: Canvas):
@@ -33,7 +33,7 @@ class Snake:
     def add_coord(self, coord: Coord):
         self.coords.append(coord)
 
-        rectangle = Utils.create_rectangle(
+        rectangle = UI.draw_pixel(
             self.canvas,
             coord,
             SNAKE_COLORS[self.color_index],
@@ -50,8 +50,8 @@ class Snake:
         self.canvas.delete(self.rectangles.pop(0))
 
     def get_initial_coord(self) -> list[Coord]:
-        x = int(CANVAS_GRID_SIZE / 4)
-        y = int(CANVAS_GRID_SIZE / 2)
+        x = int(GAME_GRID / 4)
+        y = int(GAME_GRID / 2)
 
         return [[x, y], [x + 1, y], [x + 2, y]]
 

@@ -1,23 +1,27 @@
-from snake_game import SnakeGame
-from utils import Utils
+from snake_game.snake_game import SnakeGame
 from tkinter import Event, StringVar, Canvas
-from random import randint
 
-from my_types import Direction, DNA
+from snake_game.custom_types import Direction
+from snake_game.config import FPS
 
-from config import SPEED, STEP, FILE_SAVE_PATH, CANVAS_SIZE
-from config import BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT
+from neural_network.custom_types import DNA
+from neural_network.UI import UI
+
+from manager.config import N_BEST_PER_GENERATION, FILE_SAVE_PATH, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT
 
 class Manager:
     def __init__(
         self, 
         snake_games: list[SnakeGame], 
+        neural_network_canvas: Canvas,
         best_score_text: StringVar, 
         current_best_score_text: StringVar, 
         current_alive_text: StringVar, 
         generation_text: StringVar,
     ):  
         self.snake_games = snake_games
+        
+        self.neural_network_canvas = neural_network_canvas
         
         self.best_score_text = best_score_text
         self.current_best_score_text = current_best_score_text
@@ -29,12 +33,7 @@ class Manager:
         self.current_alive = 0
         self.generation = 1
 
-        for snake_game in snake_games:
-            dna = snake_game.brain.get_DNA()
-            
-            snake_game.brain.set_DNA([Utils.get_random_value() for _ in dna])
-            
-            snake_game.start()
+        for snake_game in snake_games: snake_game.start()
             
         self.load_best_players()
         self.main_loop()
@@ -69,6 +68,7 @@ class Manager:
 
     def main_loop(self):
         current_alive = 0
+        best_index = 0
 
         for i, snake_game in enumerate(self.snake_games):
             if snake_game.is_paused:
@@ -78,9 +78,9 @@ class Manager:
             
             event: Event = Event()
 
-            values = snake_game.get_food_distance() + snake_game.get_close_objects()
+            values = snake_game.get_food_distance()
 
-            snake_game.brain.input_layer.set_values(values)
+            snake_game.brain.input_layer.set_output(values)
             event.keysym = self.transform_output(snake_game.brain.calculate_output())
             
             snake_game.key_event(event)
@@ -90,6 +90,11 @@ class Manager:
                 
             if (snake_game.snake.score > self.current_best_score):
                 self.update_current_best_score(snake_game.snake.score)
+                
+            if snake_game.snake.score > self.snake_games[best_index].snake.score or self.snake_games[best_index].is_paused:
+                best_index = i
+                      
+        UI.draw_neural_network(self.neural_network_canvas, self.snake_games[best_index].brain)
 
         self.update_current_alive(current_alive)
         
@@ -104,10 +109,10 @@ class Manager:
             for snake_game in self.snake_games:
                 snake_game.start()
 
-        self.snake_games[0].canvas.after(SPEED, self.main_loop)
+        self.snake_games[0].canvas.after(int(1000 / FPS), self.main_loop)
 
     def save_best_players(self):
-        best_players = self.snake_games[0:STEP]
+        best_players = self.snake_games[0:N_BEST_PER_GENERATION]
         
         data: dict[str, int | list[DNA]] = {}
         
@@ -128,7 +133,7 @@ class Manager:
                 self.update_best_score(data['best_score'])
                 self.update_generation(data['generation'])
                 
-                for i, snake_game in enumerate(self.snake_games[0:STEP]):
+                for i, snake_game in enumerate(self.snake_games[0:N_BEST_PER_GENERATION]):
                     snake_game.brain.set_DNA(data['best_players_dna'][i])
                     
                 self.generate_mutations()
@@ -140,28 +145,8 @@ class Manager:
         self.snake_games.sort(key=getScore, reverse=True)
 
     def generate_mutations(self):
-        for i, snake_game in enumerate(self.snake_games[STEP:]):
-            best_game_index = i % STEP
+        for i, snake_game in enumerate(self.snake_games[N_BEST_PER_GENERATION:]):
+            best_game_index = i % N_BEST_PER_GENERATION
             dna = self.snake_games[best_game_index].brain.get_DNA()
             
-            snake_game.brain.set_DNA(dna)
-
-            n_mutations = randint(0, len(dna) - 1)
-
-            dna = dna[:]
-
-            for _ in range(n_mutations):
-                randomOperation = randint(0, 3)
-                randomIndex = randint(0, len(dna) - 1)
-                
-                match randomOperation:
-                    case 0:
-                        dna[randomIndex] = Utils.get_random_value()
-                    case 1:
-                        dna[randomIndex] *= Utils.get_small_random_value()
-                    case 2:
-                        dna[randomIndex] += Utils.get_medium_random_value()
-                    case _:
-                        dna[randomIndex] -= Utils.get_medium_random_value()
-
-            snake_game.brain.set_DNA(dna)
+            snake_game.brain.generate_DNA_mutation(dna)
