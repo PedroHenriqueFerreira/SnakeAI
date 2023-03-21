@@ -16,7 +16,7 @@ class SnakeGame:
         self.brain = NeuralNetwork(
             INPUT_LAYER_SIZE,
             HIDDEN_LAYER_SIZES,
-            OUTPUT_LAYER_SIZE
+            OUTPUT_LAYER_SIZE,
         )
 
         self.create_bg()
@@ -138,10 +138,15 @@ class SnakeGame:
     def remove_message(self):
         self.canvas.delete('message')
 
+    def get_wall_distance(self):
+        head = self.snake.coords[-1]
+        
+        return [head[0] / GAME_GRID, head[1] / GAME_GRID, (GAME_GRID - head[0]) / 150, (GAME_GRID - head[1]) / 150]
+
     def get_food_distance(self):
         foodCoord = self.food.coord if self.food.coord is not None else [0, 0]
 
-        return [foodCoord[i] - self.snake.coords[-1][i] for i in range(2)]
+        return [(foodCoord[i] - self.snake.coords[-1][i]) for i in range(2)]
 
     def get_close_objects(self):
         snakeHeadCoord = self.snake.coords[-1]
@@ -154,12 +159,10 @@ class SnakeGame:
                 if coord == snakeHeadCoord:
                     continue
 
-                if -1 in coord or GAME_GRID in coord:
+                if -1 in coord or GAME_GRID in coord or coord in self.snake.coords:
                     objects.append(-1)
-                elif coord in self.snake.coords:
-                    objects.append(1)
                 elif coord == self.food.coord:
-                    objects.append(2)
+                    objects.append(1)
                 else:
                     objects.append(0)
 

@@ -1,6 +1,4 @@
-from tkinter import Tk, Canvas
 from math import exp
-from typing import Callable
 
 from random import randint
 
@@ -23,7 +21,7 @@ class NeuralNetwork:
         self.hidden_layer_sizes = hidden_layer_sizes
         self.output_layer_size = output_layer_size
         
-        self.activation_function = { 'sigmoid': self.sigmoid, 'relu': self.relu }[activation]
+        self.activation_function = { 'sigmoid': self.sigmoid, 'relu': self.relu, 'step': self.step }[activation]
 
         self.input_layer, self.hidden_layers, self.output_layer = self.init_layers()
 
@@ -101,3 +99,8 @@ class NeuralNetwork:
     
     def sigmoid(self, x: float): 
         return 1 / (1 + exp(-x)) 
+    
+    def step(self, x: float):
+        return 1.0 if x > 0 else 0.0
+    
+__all__ = ['NeuralNetwork']

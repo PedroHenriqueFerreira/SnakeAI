@@ -93,7 +93,7 @@ class Manager:
                 
             if snake_game.snake.score > self.snake_games[best_index].snake.score or self.snake_games[best_index].is_paused:
                 best_index = i
-                      
+                  
         UI.draw_neural_network(self.neural_network_canvas, self.snake_games[best_index].brain)
 
         self.update_current_alive(current_alive)

@@ -42,7 +42,7 @@ class Main:
             
             for x in range(GAMES_GRID[0]):
                 for y in range(GAMES_GRID[1]):
-                    canvas = Canvas(games_grid, width=GAME_SIZE, height=GAME_SIZE, cursor='hand1')
+                    canvas = Canvas(games_grid, width=GAME_SIZE, height=GAME_SIZE)
                     
                     canvas.grid(row=x, column=y)
 
