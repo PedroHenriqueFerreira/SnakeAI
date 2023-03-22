@@ -1,13 +1,11 @@
 from tkinter import Tk, Canvas, Frame, Label, StringVar
 
-from snake_game import SnakeGame
+from game import Game
 from manager import Manager
 
-from snake_game.config import GAME_SIZE, FONT_CONFIG, DARK_COLOR
+from utils import Utils
 
-from manager.config import GAMES_GRID, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT, PADDING
-
-from neural_network.config import NEURAL_NETWORK_WIDTH, NEURAL_NETWORK_HEIGHT
+from config import GAMES_HORIZONTAL_GRID, GAMES_VERTICAL_GRID, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, PAST_GENERATIONS_TEXT, TEXT_PADDING, GAME_SIZE, FONT_CONFIG, DARK_COLOR
 
 class Main:
     def __init__(self, is_ai: bool = False):
@@ -21,7 +19,7 @@ class Main:
             canvas = Canvas(root, width=GAME_SIZE, height=GAME_SIZE)
             canvas.pack(expand=1)
 
-            SnakeGame(canvas)
+            Game(canvas)
         else:
             header = Frame(root)
             header.grid(row=0, column=0)
@@ -29,29 +27,34 @@ class Main:
             best_score = StringVar(value=BEST_SCORE_TEXT)
             current_best_score = StringVar(value=CURRENT_BEST_SCORE_TEXT)
             current_alive = StringVar(value=CURRENT_ALIVE_TEXT)
-            current_generation = StringVar(value=GENERATION_TEXT)
+            past_generations = StringVar(value=PAST_GENERATIONS_TEXT)
 
-            for i, text in enumerate([best_score, current_best_score, current_alive, current_generation]):
-                Label(header, textvariable=text, font=FONT_CONFIG, padx=PADDING, pady=PADDING, fg=DARK_COLOR).grid(row=0, column=i)
+            for i, text in enumerate([best_score, current_best_score, current_alive, past_generations]):
+                Label(header, textvariable=text, font=FONT_CONFIG, padx=TEXT_PADDING, pady=TEXT_PADDING, fg=DARK_COLOR).grid(row=0, column=i)
             
             games_grid = Frame(root)
             
             games_grid.grid(row=1, column=0)
 
-            snake_games: list[SnakeGame] = []
+            snake_games: list[Game] = []
             
-            for x in range(GAMES_GRID[0]):
-                for y in range(GAMES_GRID[1]):
+            for x in range(GAMES_VERTICAL_GRID):
+                for y in range(GAMES_HORIZONTAL_GRID):
                     canvas = Canvas(games_grid, width=GAME_SIZE, height=GAME_SIZE)
                     
                     canvas.grid(row=x, column=y)
 
-                    snake_games.append(SnakeGame(canvas, True))
+                    snake_games.append(Game(canvas, True))
 
-            neural_network_canvas = Canvas(root, width=NEURAL_NETWORK_WIDTH, height=NEURAL_NETWORK_HEIGHT)
+            neural_network_canvas = Canvas(
+                root, 
+                width=Utils.get_neural_network_width(), 
+                height=Utils.get_neural_network_height()
+            )
+            
             neural_network_canvas.grid(row=1, column=1)
 
-            Manager(snake_games, neural_network_canvas, best_score, current_best_score, current_alive, current_generation)
+            Manager(snake_games, neural_network_canvas, best_score, current_best_score, current_alive, past_generations)
             
         self.center_win(win)
 

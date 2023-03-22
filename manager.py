@@ -1,41 +1,43 @@
-from snake_game.snake_game import SnakeGame
+from game import Game
 from tkinter import Event, StringVar, Canvas
 
-from snake_game.custom_types import Direction
-from snake_game.config import FPS
+from config import FPS
 
-from neural_network.custom_types import DNA
-from neural_network.UI import UI
+from custom_types import DNA, Direction
+from UI import UI
 
-from manager.config import N_BEST_PER_GENERATION, FILE_SAVE_PATH, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, GENERATION_TEXT
+from config import TOP_PLAYERS, FILE_SAVE_PATH, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, PAST_GENERATIONS_TEXT
 
 class Manager:
     def __init__(
         self, 
-        snake_games: list[SnakeGame], 
+        snake_games: list[Game], 
         neural_network_canvas: Canvas,
         best_score_text: StringVar, 
         current_best_score_text: StringVar, 
         current_alive_text: StringVar, 
-        generation_text: StringVar,
+        past_generations_text: StringVar,
     ):  
-        self.snake_games = snake_games
+        self.UI = UI(neural_network_canvas)
         
-        self.neural_network_canvas = neural_network_canvas
+        self.snake_games = snake_games
         
         self.best_score_text = best_score_text
         self.current_best_score_text = current_best_score_text
         self.current_alive_text = current_alive_text
-        self.generation_text = generation_text
+        self.past_generations_text = past_generations_text
         
         self.best_score = 0
         self.current_best_score = 0
         self.current_alive = 0
-        self.generation = 1
+        self.generation = 0
 
         for snake_game in snake_games: snake_game.start()
-            
+        
+        
         self.load_best_players()
+        
+        self.UI.draw_neural_network(self.snake_games[0].brain)    
         self.main_loop()
 
     def update_best_score(self, value: int):
@@ -53,10 +55,10 @@ class Manager:
         new_text = CURRENT_ALIVE_TEXT.replace('0', str(value))
         self.current_alive_text.set(new_text)
     
-    def update_generation(self, value: int):
+    def update_past_generations(self, value: int):
         self.generation = value
-        new_text = GENERATION_TEXT.replace('0', str(value))
-        self.generation_text.set(new_text)
+        new_text = PAST_GENERATIONS_TEXT.replace('0', str(value))
+        self.past_generations_text.set(new_text)
 
     def transform_output(self, output: list[float]) -> Direction:
         if output[0] > 0: return 'right'
@@ -94,13 +96,13 @@ class Manager:
             if snake_game.snake.score > self.snake_games[best_index].snake.score or self.snake_games[best_index].is_paused:
                 best_index = i
                   
-        UI.draw_neural_network(self.neural_network_canvas, self.snake_games[best_index].brain)
+        self.UI.update_neural_network(self.snake_games[best_index].brain)
 
         self.update_current_alive(current_alive)
         
         if current_alive == 0:
             self.update_current_best_score(0)
-            self.update_generation(self.generation + 1)
+            self.update_past_generations(self.generation + 1)
             
             self.sort_best_players()
             self.save_best_players()
@@ -109,10 +111,10 @@ class Manager:
             for snake_game in self.snake_games:
                 snake_game.start()
 
-        self.snake_games[0].canvas.after(int(1000 / FPS), self.main_loop)
+        self.snake_games[0].UI.canvas.after(int(1000 / FPS), self.main_loop)
 
     def save_best_players(self):
-        best_players = self.snake_games[0:N_BEST_PER_GENERATION]
+        best_players = self.snake_games[0:TOP_PLAYERS]
         
         data: dict[str, int | list[DNA]] = {}
         
@@ -131,9 +133,9 @@ class Manager:
                 data: dict = eval(f.read())
                 
                 self.update_best_score(data['best_score'])
-                self.update_generation(data['generation'])
+                self.update_past_generations(data['generation'])
                 
-                for i, snake_game in enumerate(self.snake_games[0:N_BEST_PER_GENERATION]):
+                for i, snake_game in enumerate(self.snake_games[0:TOP_PLAYERS]):
                     snake_game.brain.set_DNA(data['best_players_dna'][i])
                     
                 self.generate_mutations()
@@ -145,8 +147,8 @@ class Manager:
         self.snake_games.sort(key=getScore, reverse=True)
 
     def generate_mutations(self):
-        for i, snake_game in enumerate(self.snake_games[N_BEST_PER_GENERATION:]):
-            best_game_index = i % N_BEST_PER_GENERATION
-            dna = self.snake_games[best_game_index].brain.get_DNA()
+        for i, snake_game in enumerate(self.snake_games[TOP_PLAYERS:]):
+            index = i % TOP_PLAYERS
+            dna = self.snake_games[index].brain.get_DNA()
             
             snake_game.brain.generate_DNA_mutation(dna)
