@@ -220,22 +220,29 @@ class Game:
     def get_wall_distance(self):
         head = self.snake.coords[-1]
         
-        return [head[0] / GAME_GRID, head[1] / GAME_GRID, (GAME_GRID - head[0]) / 150, (GAME_GRID - head[1]) / 150]
+        head_x = head[0] / GAME_GRID
+        head_y = head[1] / GAME_GRID
+        
+        head_xi = (GAME_GRID - head[0]) / GAME_GRID
+        head_yi = (GAME_GRID - head[1]) / GAME_GRID
+        
+        return [head_x, head_y, head_xi, head_yi]
 
     def get_food_distance(self):
-        foodCoord = self.food.coord if self.food.coord is not None else [0, 0]
-
-        return [(foodCoord[i] - self.snake.coords[-1][i]) for i in range(2)]
+        if self.food.coord is None:
+            return [0, 0]
+        
+        return [(self.food.coord[i] - self.snake.coords[-1][i]) / GAME_GRID for i in range(2)]
 
     def get_close_objects(self):
-        snakeHeadCoord = self.snake.coords[-1]
+        head = self.snake.coords[-1]
         objects = []
 
         for x in range(3):
             for y in range(3):
-                coord = [snakeHeadCoord[0] + x - 1, snakeHeadCoord[1] + y - 1]
+                coord = [head[0] + x - 1, head[1] + y - 1]
 
-                if coord == snakeHeadCoord:
+                if coord == head:
                     continue
 
                 if -1 in coord or GAME_GRID in coord or coord in self.snake.coords:

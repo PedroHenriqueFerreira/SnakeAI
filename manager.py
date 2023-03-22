@@ -80,7 +80,7 @@ class Manager:
             
             event: Event = Event()
 
-            values = snake_game.get_food_distance()
+            values = snake_game.get_food_distance() + snake_game.get_wall_distance() + snake_game.get_close_objects()
 
             snake_game.brain.input_layer.set_output(values)
             event.keysym = self.transform_output(snake_game.brain.calculate_output())

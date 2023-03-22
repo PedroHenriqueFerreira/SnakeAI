@@ -34,7 +34,7 @@ class Main:
             
             games_grid = Frame(root)
             
-            games_grid.grid(row=1, column=0)
+            games_grid.grid(row=1, column=0, padx=TEXT_PADDING, pady=TEXT_PADDING)
 
             snake_games: list[Game] = []
             
@@ -52,7 +52,7 @@ class Main:
                 height=Utils.get_neural_network_height()
             )
             
-            neural_network_canvas.grid(row=1, column=1)
+            neural_network_canvas.grid(row=1, column=1, padx=TEXT_PADDING, pady=TEXT_PADDING)
 
             Manager(snake_games, neural_network_canvas, best_score, current_best_score, current_alive, past_generations)
             

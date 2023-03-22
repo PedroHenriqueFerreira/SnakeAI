@@ -1,8 +1,9 @@
 from tkinter import Canvas
+from random import randint
 
 from utils import Utils
 
-from config import GAME_SIZE, GAME_GRID, NEURON_FONT_CONFIG, LINE_WIDTH, CIRCLE_SIZE, NEURON_HORIZONTAL_MARGIN, NEURON_VERTICAL_MARGIN, RED_COLOR, DARK_COLOR, LIGHT_COLOR
+from config import GAME_SIZE, GAME_GRID, NEURON_FONT_CONFIG, LINE_WIDTH, CIRCLE_SIZE, NEURON_HORIZONTAL_MARGIN, NEURON_VERTICAL_MARGIN, RED_COLOR, DARK_COLOR, LIGHT_COLOR, GREEN_COLORS
 
 from custom_types import Coord
 
@@ -162,6 +163,38 @@ class UI:
             
         for text_element in text_elements:
             self.canvas.lift(text_element)
+            
+    def draw_grafic(self):
+        for i in range(10):
+            self.draw_line([0, i * 50], [500, i * 50], '#ccc', 'grafic')
+            
+        for i in range(10):
+            self.draw_line([i * 50, 0], [i * 50, 500], '#ccc', 'grafic')
+        
+        dados = []    
+        
+        for i in range(50):
+            rand = randint(50, 100)
+            dados.append(rand)
+            
+        for i in range(50):
+            rand = randint(100, 200)
+            dados.append(rand)
+        
+        for i in range(50):
+            rand = randint(200, 300)
+            dados.append(rand)
+        
+        for i in range(len(dados)):
+            width = 500 / len(dados)
+            
+            self.canvas.create_rectangle(i * width, 500, i * width + width, 500 - dados[i], fill=GREEN_COLORS[0], width=0)
+            
+            if i != len(dados) - 1:
+                self.canvas.create_line((i + 0.5) * width, 500 - dados[i], (i + 1.5) * width, 500 - dados[i + 1], fill=DARK_COLOR, tags='line', width=2)
+        
+        for element in self.canvas.find_withtag('line'):
+            self.canvas.lift(element)
             
     def clear(self, tag: str):
         self.canvas.delete(tag)
