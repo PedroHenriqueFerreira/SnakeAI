@@ -5,7 +5,7 @@ from manager import Manager
 
 from utils import Utils
 
-from config import GAMES_HORIZONTAL_GRID, GAMES_VERTICAL_GRID, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, PAST_GENERATIONS_TEXT, TEXT_PADDING, GAME_SIZE, FONT_CONFIG, DARK_COLOR
+from config import GAMES_HORIZONTAL_GRID, GAMES_VERTICAL_GRID, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, PAST_GENERATIONS_TEXT, PADDING, GAME_SIZE, FONT_CONFIG, DARK_COLOR, CHART_SIZE
 
 class Main:
     def __init__(self, is_ai: bool = False):
@@ -30,31 +30,35 @@ class Main:
             past_generations = StringVar(value=PAST_GENERATIONS_TEXT)
 
             for i, text in enumerate([best_score, current_best_score, current_alive, past_generations]):
-                Label(header, textvariable=text, font=FONT_CONFIG, padx=TEXT_PADDING, pady=TEXT_PADDING, fg=DARK_COLOR).grid(row=0, column=i)
+                label = Label(header, textvariable=text, font=FONT_CONFIG, fg=DARK_COLOR)
+                label.grid(row=0, column=i, padx=PADDING)
             
-            games_grid = Frame(root)
-            
-            games_grid.grid(row=1, column=0, padx=TEXT_PADDING, pady=TEXT_PADDING)
+            games = Frame(root)
+            games.grid(row=1, column=0)
 
             snake_games: list[Game] = []
             
             for x in range(GAMES_VERTICAL_GRID):
                 for y in range(GAMES_HORIZONTAL_GRID):
-                    canvas = Canvas(games_grid, width=GAME_SIZE, height=GAME_SIZE)
-                    
+                    canvas = Canvas(games, width=GAME_SIZE, height=GAME_SIZE)
                     canvas.grid(row=x, column=y)
 
                     snake_games.append(Game(canvas, True))
 
+            sidebar = Frame(root)
+            sidebar.grid(row=1, column=1, padx=PADDING)
+    
             neural_network_canvas = Canvas(
-                root, 
+                sidebar, 
                 width=Utils.get_neural_network_width(), 
                 height=Utils.get_neural_network_height()
             )
+            neural_network_canvas.grid(row=0, column=0, pady=PADDING)   
             
-            neural_network_canvas.grid(row=1, column=1, padx=TEXT_PADDING, pady=TEXT_PADDING)
+            chart_canvas = Canvas(sidebar, width=CHART_SIZE, height=CHART_SIZE)
+            chart_canvas.grid(row=1, column=0, pady=PADDING)
 
-            Manager(snake_games, neural_network_canvas, best_score, current_best_score, current_alive, past_generations)
+            Manager(snake_games, neural_network_canvas, chart_canvas, best_score, current_best_score, current_alive, past_generations)
             
         self.center_win(win)
 

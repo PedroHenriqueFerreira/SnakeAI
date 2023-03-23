@@ -13,12 +13,14 @@ class Manager:
         self, 
         snake_games: list[Game], 
         neural_network_canvas: Canvas,
+        chart_canvas: Canvas,
         best_score_text: StringVar, 
         current_best_score_text: StringVar, 
         current_alive_text: StringVar, 
         past_generations_text: StringVar,
     ):  
-        self.UI = UI(neural_network_canvas)
+        self.neural_network_UI = UI(neural_network_canvas)
+        self.chart_UI = UI(chart_canvas)
         
         self.snake_games = snake_games
         
@@ -31,13 +33,15 @@ class Manager:
         self.current_best_score = 0
         self.current_alive = 0
         self.generation = 0
+        
+        self.best_score_history: list[int] = []
 
+        self.neural_network_UI.draw_neural_network(self.snake_games[0].brain)
+        self.chart_UI.draw_chart()
+        
         for snake_game in snake_games: snake_game.start()
         
-        
         self.load_best_players()
-        
-        self.UI.draw_neural_network(self.snake_games[0].brain)    
         self.main_loop()
 
     def update_best_score(self, value: int):
@@ -80,7 +84,7 @@ class Manager:
             
             event: Event = Event()
 
-            values = snake_game.get_food_distance() + snake_game.get_wall_distance() + snake_game.get_close_objects()
+            values = snake_game.get_food_distance()
 
             snake_game.brain.input_layer.set_output(values)
             event.keysym = self.transform_output(snake_game.brain.calculate_output())
@@ -95,12 +99,15 @@ class Manager:
                 
             if snake_game.snake.score > self.snake_games[best_index].snake.score or self.snake_games[best_index].is_paused:
                 best_index = i
-                  
-        self.UI.update_neural_network(self.snake_games[best_index].brain)
 
+        self.neural_network_UI.update_neural_network(self.snake_games[best_index].brain)
+        
         self.update_current_alive(current_alive)
         
         if current_alive == 0:
+            self.best_score_history.append(self.current_best_score)
+            self.chart_UI.update_chart(self.best_score_history)
+            
             self.update_current_best_score(0)
             self.update_past_generations(self.generation + 1)
             
@@ -116,13 +123,14 @@ class Manager:
     def save_best_players(self):
         best_players = self.snake_games[0:TOP_PLAYERS]
         
-        data: dict[str, int | list[DNA]] = {}
+        data: dict = {}
         
         best_players_dna = [snake_game.brain.get_DNA() for snake_game in best_players]
         
         data['best_players_dna'] = best_players_dna
         data['best_score'] = self.best_score
         data['generation'] = self.generation
+        data['best_score_history'] = self.best_score_history
         
         with open(FILE_SAVE_PATH, 'w') as f:
             f.write(str(data))
@@ -134,6 +142,9 @@ class Manager:
                 
                 self.update_best_score(data['best_score'])
                 self.update_past_generations(data['generation'])
+                
+                self.best_score_history = data['best_score_history']
+                self.chart_UI.update_chart(self.best_score_history)
                 
                 for i, snake_game in enumerate(self.snake_games[0:TOP_PLAYERS]):
                     snake_game.brain.set_DNA(data['best_players_dna'][i])

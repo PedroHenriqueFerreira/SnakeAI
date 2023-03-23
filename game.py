@@ -232,7 +232,7 @@ class Game:
         if self.food.coord is None:
             return [0, 0]
         
-        return [(self.food.coord[i] - self.snake.coords[-1][i]) / GAME_GRID for i in range(2)]
+        return [(self.food.coord[i] - self.snake.coords[-1][i]) for i in range(2)]
 
     def get_close_objects(self):
         head = self.snake.coords[-1]
