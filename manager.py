@@ -3,7 +3,7 @@ from tkinter import Event, StringVar, Canvas
 
 from config import FPS
 
-from custom_types import DNA, Direction
+from custom_types import Direction
 from UI import UI
 
 from config import TOP_PLAYERS, FILE_SAVE_PATH, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, PAST_GENERATIONS_TEXT
@@ -14,6 +14,7 @@ class Manager:
         snake_games: list[Game], 
         neural_network_canvas: Canvas,
         chart_canvas: Canvas,
+        best_player_canvas: Canvas,
         best_score_text: StringVar, 
         current_best_score_text: StringVar, 
         current_alive_text: StringVar, 
@@ -21,6 +22,7 @@ class Manager:
     ):  
         self.neural_network_UI = UI(neural_network_canvas)
         self.chart_UI = UI(chart_canvas)
+        self.best_player_UI = UI(best_player_canvas)
         
         self.snake_games = snake_games
         
@@ -38,6 +40,7 @@ class Manager:
 
         self.neural_network_UI.draw_neural_network(self.snake_games[0].brain)
         self.chart_UI.draw_chart()
+        self.best_player_UI.draw_best_game(self.snake_games[0])
         
         for snake_game in snake_games: snake_game.start()
         
@@ -84,7 +87,7 @@ class Manager:
             
             event: Event = Event()
 
-            values = snake_game.get_food_distance()
+            values = snake_game.get_food_distance() + snake_game.get_close_objects()
 
             snake_game.brain.input_layer.set_output(values)
             event.keysym = self.transform_output(snake_game.brain.calculate_output())

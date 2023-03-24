@@ -1,27 +1,10 @@
 from math import exp
 from random import randint
 
-from config import INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZES, OUTPUT_LAYER_SIZE, CIRCLE_SIZE, NEURON_HORIZONTAL_MARGIN, NEURON_VERTICAL_MARGIN
-
 class Utils:
     @staticmethod
-    def get_total_size(element_size: int, element_count: int, spacing: int):
+    def get_total_size(element_size: float, element_count: int, spacing: float):
         return element_count * element_size + (element_count - 1) * spacing
-    
-    @staticmethod
-    def get_neural_network_width():
-        count = len([INPUT_LAYER_SIZE, *HIDDEN_LAYER_SIZES, OUTPUT_LAYER_SIZE])
-        
-        return count * CIRCLE_SIZE + (count - 1) * NEURON_HORIZONTAL_MARGIN
-    
-    @staticmethod
-    def get_neural_network_height():
-        count = max(
-            max([INPUT_LAYER_SIZE, *HIDDEN_LAYER_SIZES]) + 1, 
-            OUTPUT_LAYER_SIZE
-        )
-        
-        return count * CIRCLE_SIZE + (count - 1) * NEURON_VERTICAL_MARGIN
     
     @staticmethod
     def number_to_string(number: float):

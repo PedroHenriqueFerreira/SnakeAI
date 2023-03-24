@@ -1,9 +1,12 @@
 from tkinter import Canvas
-from random import randint
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from game import Game
 
 from utils import Utils
 
-from config import GAME_SIZE, GAME_GRID, NEURON_FONT_CONFIG, LINE_WIDTH, CIRCLE_SIZE, NEURON_HORIZONTAL_MARGIN, NEURON_VERTICAL_MARGIN, RED_COLOR, DARK_COLOR, LIGHT_COLOR, GREEN_COLORS, CHART_SIZE, CHART_GRID, SECONDARY_LIGHT_COLOR
+from config import NEURON_FONT_CONFIG, LINE_WIDTH, CIRCLE_SIZE, BLACK_COLOR, WHITE_COLOR, CHART_SIZE, CHART_GRID, GRAY_COLOR, NEURAL_NETWORK_SIZE, BLUE_COLOR, GREEN_COLORS, BEST_PLAYER_SIZE, GAME_GRID
 
 from custom_types import Coord
 
@@ -14,27 +17,14 @@ class UI:
     def __init__(self, canvas: Canvas):
         self.canvas = canvas
 
-    def draw_bg(self, color: str, tag: str):
+    def draw_pixel(self, coord: Coord, size: float, color: str, tag: str):
         return self.canvas.create_rectangle(
-            0,
-            0,
-            GAME_SIZE,
-            GAME_SIZE,
-            fill=color,
+            coord[0] * size,
+            coord[1] * size,
+            (coord[0] + 1) * size,
+            (coord[1] + 1) * size,
             width=0,
-            tags=tag
-        )
-
-    def draw_pixel(self, coord: Coord, color: str, tag: str):
-        PIXEL_SIZE = GAME_SIZE / GAME_GRID
-
-        return self.canvas.create_rectangle(
-            coord[0] * PIXEL_SIZE,
-            coord[1] * PIXEL_SIZE,
-            (coord[0] + 1) * PIXEL_SIZE,
-            (coord[1] + 1) * PIXEL_SIZE,
             fill=color,
-            width=0,
             tags=tag
         )
 
@@ -71,10 +61,12 @@ class UI:
 
     def draw_polygon(self, coords: list[Coord], color: str, tag: str):
         flat_coords = [pos for coord in coords for pos in coord]
-        
+
         return self.canvas.create_polygon(
-            *flat_coords, 
-            fill=color,  
+            *flat_coords,
+            fill='',
+            width=LINE_WIDTH,
+            outline=color,
             tags=tag
         )
 
@@ -87,38 +79,48 @@ class UI:
 
         elements: list[list[int]] = []
 
+        max_layer_size = max([len(layer.neurons) for layer in layers])
+        VERTICAL_MARGIN = (NEURAL_NETWORK_SIZE - CIRCLE_SIZE *
+                           max_layer_size) / (max_layer_size - 1)
+        HORIZONTAL_MARGIN = (NEURAL_NETWORK_SIZE -
+                             CIRCLE_SIZE * len(layers)) / (len(layers) - 1)
+
         for layer_idx, layer in enumerate(layers):
             row: list[int] = []
 
-            vertical_size = Utils.get_total_size(CIRCLE_SIZE, len(layer.neurons), NEURON_VERTICAL_MARGIN)
-            top = int((Utils.get_neural_network_height() - vertical_size) / 2)
+            vertical_size = Utils.get_total_size(
+                CIRCLE_SIZE, len(layer.neurons), VERTICAL_MARGIN)
+            top = int((NEURAL_NETWORK_SIZE - vertical_size) / 2)
 
             for neuron_idx, neuron in enumerate(layer.neurons):
-                x = layer_idx * CIRCLE_SIZE + layer_idx * NEURON_HORIZONTAL_MARGIN
-                y = top + neuron_idx * CIRCLE_SIZE + neuron_idx * NEURON_VERTICAL_MARGIN
+                x = layer_idx * CIRCLE_SIZE + layer_idx * HORIZONTAL_MARGIN
+                y = top + neuron_idx * CIRCLE_SIZE + neuron_idx * VERTICAL_MARGIN
 
-                neuron_element = self.draw_circle([x, y], DARK_COLOR, 'neuron')
+                neuron_element = self.draw_circle(
+                    [x, y], BLACK_COLOR, 'neuron')
 
                 row.append(neuron_element)
 
                 self.draw_text(
                     [pos + CIRCLE_SIZE / 2 for pos in [x, y]],
-                    LIGHT_COLOR,
+                    WHITE_COLOR,
                     '0.0',
                     NEURON_FONT_CONFIG,
                     'text'
                 )
 
-                if layer_idx == 0 or neuron.wheights is None: continue
+                if layer_idx == 0 or neuron.wheights is None:
+                    continue
 
                 for idx in range(len(neuron.wheights)):
-                    destiny_coords = self.canvas.coords(elements[layer_idx - 1][idx])[:2]
+                    destiny_coords = self.canvas.coords(
+                        elements[layer_idx - 1][idx])[:2]
                     origin_coords = [x, y]
 
                     origin = [pos + CIRCLE_SIZE / 2 for pos in origin_coords]
                     destiny = [pos + CIRCLE_SIZE / 2 for pos in destiny_coords]
 
-                    self.draw_line(origin, destiny, DARK_COLOR, 'line')
+                    self.draw_line(origin, destiny, BLACK_COLOR, 'line')
 
             elements.append(row)
 
@@ -143,27 +145,31 @@ class UI:
             neurons.extend(layer.neurons)
 
         for idx, neuron in enumerate(neurons):
-            color = DARK_COLOR
+            color = BLACK_COLOR
 
             if neuron.output > 0:
-                color = RED_COLOR
+                color = BLUE_COLOR
                 neuron_elements_active.append(neuron_elements[idx])
 
             self.canvas.itemconfig(neuron_elements[idx], fill=color)
-            self.canvas.itemconfig(text_elements[idx], text=Utils.number_to_string(neuron.output))
+            self.canvas.itemconfig(
+                text_elements[idx], text=Utils.number_to_string(neuron.output))
 
         for line_element in line_elements:
             line_coords = self.canvas.coords(line_element)
 
-            elements_at_start = self.canvas.find_overlapping(*line_coords[:2], *line_coords[:2])
-            elements_at_end = self.canvas.find_overlapping(*line_coords[2:], *line_coords[2:])
+            elements_at_start = self.canvas.find_overlapping(
+                *line_coords[:2], *line_coords[:2])
+            elements_at_end = self.canvas.find_overlapping(
+                *line_coords[2:], *line_coords[2:])
 
             neuron_elements_over_line = list(
                 (set(elements_at_start) | set(elements_at_end)) &
                 set(neuron_elements_active)
             )
 
-            color = RED_COLOR if len(neuron_elements_over_line) >= 2 else DARK_COLOR
+            color = BLUE_COLOR if len(
+                neuron_elements_over_line) >= 2 else BLACK_COLOR
 
             self.canvas.itemconfig(line_element, fill=color)
 
@@ -178,31 +184,59 @@ class UI:
 
     def draw_chart(self):
         BLOCK_SIZE = CHART_SIZE / CHART_GRID
-        
-        for index in range(CHART_GRID):
-            self.draw_line([0, index * BLOCK_SIZE], [CHART_SIZE, index * BLOCK_SIZE], SECONDARY_LIGHT_COLOR, 'line')
-            self.draw_line([index * BLOCK_SIZE, 0], [index * BLOCK_SIZE, CHART_SIZE], SECONDARY_LIGHT_COLOR, 'line')
+
+        for index in range(CHART_GRID + 1):
+            self.draw_line([0, index * BLOCK_SIZE], [CHART_SIZE,
+                           index * BLOCK_SIZE], GRAY_COLOR, 'line')
+            self.draw_line([index * BLOCK_SIZE, 0], [index *
+                           BLOCK_SIZE, CHART_SIZE], GRAY_COLOR, 'line')
 
     def update_chart(self, data: list[int]):
-        if len(data) == 0 or max(data) == 0: return
-        
+        if len(data) == 0 or max(data) == 0:
+            return
+
         coords: list[Coord] = []
 
         data = data[:]
-        
-        while len(data) < 50: data.insert(0, 0)
-        while len(data) > 50: data.pop(0)
 
-        width = CHART_SIZE / len(data)
+        while len(data) < 100:
+            data.insert(0, 0)
+        while len(data) > 100:
+            data.pop(0)
 
-        self.clear('chart')
-        
         for i, value in enumerate(data):
-            x = i * width
-            y = CHART_SIZE - (value / max(data)) * CHART_SIZE
-            
-            self.canvas.create_rectangle(x, y, x + width, CHART_SIZE, tags='chart', fill=GREEN_COLORS[1], width=0)
+            x = i * (CHART_SIZE / (len(data) - 1))
+
+            y = CHART_SIZE + LINE_WIDTH - (value / max(data)) * CHART_SIZE
+
+            if len(data) - 1 == i:
+                x += LINE_WIDTH
+
             coords.append([x, y])
 
-    def clear(self, tag: str):
-        self.canvas.delete(tag)
+        start_coord: Coord = [-LINE_WIDTH, CHART_SIZE + LINE_WIDTH]
+        destiny_coord: Coord = [CHART_SIZE +
+                                LINE_WIDTH, CHART_SIZE + LINE_WIDTH]
+
+        self.clear('chart')
+        self.draw_polygon(
+            [start_coord, *coords, destiny_coord], BLUE_COLOR, 'chart')
+
+    def draw_best_game(self, game: 'Game'):
+        self.draw_pixel([0, 0], BEST_PLAYER_SIZE, GREEN_COLORS[0], 'bg')
+        
+        for i in range(2):
+            for x in range(i, GAME_GRID, 2):
+                for y in range(1 - i, GAME_GRID, 2):
+                    self.draw_pixel(
+                        [x, y],
+                        BEST_PLAYER_SIZE / GAME_GRID,
+                        GREEN_COLORS[1],
+                        'bg'
+                    )
+
+    def clear(self, tag_or_id: str | int):
+        self.canvas.delete(tag_or_id)
+
+    def find(self, tag_or_id: str | int):
+        return self.canvas.find_withtag(tag_or_id)

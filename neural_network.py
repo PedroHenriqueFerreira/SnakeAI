@@ -80,7 +80,7 @@ class NeuralNetwork:
 
         return input_layer, hidden_layers, output_layer
 
-    def generate_DNA_mutation(self, dna: DNA):
+    def generate_DNA_mutation(self, dna: list[float]):
         random_mutations = randint(0, len(dna) - 1)
         
         for _ in range(random_mutations):
@@ -99,8 +99,8 @@ class NeuralNetwork:
 
         self.set_DNA(dna)
 
-    def get_DNA(self) -> DNA:
-        dna: DNA = []
+    def get_DNA(self):
+        dna: list[float] = []
 
         for layer in [*self.hidden_layers, self.output_layer]:
             for neuron in layer.neurons:
@@ -110,7 +110,7 @@ class NeuralNetwork:
 
         return dna
 
-    def set_DNA(self, dna: DNA):
+    def set_DNA(self, dna: list[float]):
         dnaIndex = 0
 
         for layer in [*self.hidden_layers, self.output_layer]:
