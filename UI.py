@@ -74,9 +74,7 @@ class UI:
         
         return self.canvas.create_polygon(
             *flat_coords, 
-            fill=color, 
-            width=LINE_WIDTH, 
-            outline=DARK_COLOR, 
+            fill=color,  
             tags=tag
         )
 
@@ -193,22 +191,18 @@ class UI:
         data = data[:]
         
         while len(data) < 50: data.insert(0, 0)
+        while len(data) > 50: data.pop(0)
 
-        for i, value in enumerate(data):
-            if len(data) > 1: 
-                x = i * (CHART_SIZE / (len(data) - 1))
-                
-            y = CHART_SIZE + LINE_WIDTH - (value / max(data)) * CHART_SIZE
-            
-            if len(data) - 1 == i: x += LINE_WIDTH
-            
-            coords.append([x, y])
-        
-        start_coord: Coord = [-LINE_WIDTH, CHART_SIZE + LINE_WIDTH]
-        destiny_coord: Coord = [CHART_SIZE + LINE_WIDTH, CHART_SIZE + LINE_WIDTH]
-        
+        width = CHART_SIZE / len(data)
+
         self.clear('chart')
-        self.draw_polygon([start_coord, *coords, destiny_coord], GREEN_COLORS[0], 'chart')
+        
+        for i, value in enumerate(data):
+            x = i * width
+            y = CHART_SIZE - (value / max(data)) * CHART_SIZE
+            
+            self.canvas.create_rectangle(x, y, x + width, CHART_SIZE, tags='chart', fill=GREEN_COLORS[1], width=0)
+            coords.append([x, y])
 
     def clear(self, tag: str):
         self.canvas.delete(tag)
