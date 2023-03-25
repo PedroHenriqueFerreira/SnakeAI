@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 
 from utils import Utils
 
-from config import NEURON_FONT_CONFIG, LINE_WIDTH, CIRCLE_SIZE, BLACK_COLOR, WHITE_COLOR, CHART_SIZE, CHART_GRID, GRAY_COLOR, NEURAL_NETWORK_SIZE, BLUE_COLOR, GREEN_COLORS, BEST_PLAYER_SIZE, GAME_GRID
+from config import NEURON_FONT_CONFIG, LINE_WIDTH, CIRCLE_SIZE, BLACK_COLOR, WHITE_COLOR, CHART_SIZE, CHART_GRID, GRAY_COLOR, NEURAL_NETWORK_SIZE, BLUE_COLOR, GREEN_COLORS, BEST_GAME_SIZE, GAME_GRID, RED_COLOR
 
 from custom_types import Coord
 
@@ -124,10 +124,10 @@ class UI:
 
             elements.append(row)
 
-        for neuron_element in self.canvas.find_withtag('neuron'):
+        for neuron_element in self.find('neuron'):
             self.canvas.lift(neuron_element)
 
-        for text_element in self.canvas.find_withtag('text'):
+        for text_element in self.find('text'):
             self.canvas.lift(text_element)
 
     def update_neural_network(self, neural_network: NeuralNetwork):
@@ -136,9 +136,9 @@ class UI:
 
         neuron_elements_active: list[int] = []
 
-        neuron_elements = self.canvas.find_withtag('neuron')
-        text_elements = self.canvas.find_withtag('text')
-        line_elements = self.canvas.find_withtag('line')
+        neuron_elements = self.find('neuron')
+        text_elements = self.find('text')
+        line_elements = self.find('line')
 
         neurons: list[Neuron] = []
         for layer in layers:
@@ -222,18 +222,39 @@ class UI:
         self.draw_polygon(
             [start_coord, *coords, destiny_coord], BLUE_COLOR, 'chart')
 
-    def draw_best_game(self, game: 'Game'):
-        self.draw_pixel([0, 0], BEST_PLAYER_SIZE, GREEN_COLORS[0], 'bg')
+    def draw_best_game(self):
+        self.draw_pixel([0, 0], BEST_GAME_SIZE, GREEN_COLORS[0], 'bg')
         
         for i in range(2):
             for x in range(i, GAME_GRID, 2):
                 for y in range(1 - i, GAME_GRID, 2):
                     self.draw_pixel(
                         [x, y],
-                        BEST_PLAYER_SIZE / GAME_GRID,
+                        BEST_GAME_SIZE / GAME_GRID,
                         GREEN_COLORS[1],
                         'bg'
                     )
+
+    def update_best_game(self, game: 'Game'):
+        self.clear('snake')
+        self.clear('food')
+        
+        if game.food.coord is not None:
+            self.draw_pixel(
+                game.food.coord,
+                BEST_GAME_SIZE / GAME_GRID,
+                RED_COLOR,
+                'food'
+            )
+        
+        for snake_coord in game.snake.coords:
+            self.draw_pixel(
+                snake_coord, 
+                BEST_GAME_SIZE / GAME_GRID, 
+                BLUE_COLOR,
+                'snake'
+            )
+        
 
     def clear(self, tag_or_id: str | int):
         self.canvas.delete(tag_or_id)
