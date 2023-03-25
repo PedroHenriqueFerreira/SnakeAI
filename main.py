@@ -35,22 +35,21 @@ class Main:
                     fg=BLACK_COLOR
                 ).grid(row=i, column=0, pady=(0, PADDING))
 
-            Frame(left_column, height=300).grid(row=4, column=0)
+            Frame(left_column, height=340).grid(row=4, column=0)
 
             Label(
                 left_column,
-                text="Pontuacao x geracao:",
+                text='Jogo do melhor individuo:',
                 font=FONT_CONFIG,
                 fg=BLACK_COLOR
             ).grid(row=5, column=0, pady=(0, PADDING))
 
-            chart_canvas = Canvas(
+            best_player_canvas = Canvas(
                 left_column,
-                width=CHART_SIZE,
-                height=CHART_SIZE,
-                highlightthickness=0
+                width=BEST_GAME_SIZE,
+                height=BEST_GAME_SIZE
             )
-            chart_canvas.grid(row=6, column=0)
+            best_player_canvas.grid(row=6, column=0)
 
             center_column = Frame(root)
             center_column.grid(row=0, column=1)
@@ -72,14 +71,13 @@ class Main:
 
             right_column = Frame(root)
             right_column.grid(row=0, column=2, padx=(PADDING, 0))
-
-
+            
             Label(
                 right_column,
-                text='Melhor rede neural atual:',
+                text='Rede neural do melhor individuo:',
                 font=FONT_CONFIG,
                 fg=BLACK_COLOR
-            ).grid(row=0, column=0, pady=PADDING)
+            ).grid(row=0, column=0, pady=(0, PADDING))
 
             neural_network_canvas = Canvas(
                 right_column,
@@ -88,20 +86,23 @@ class Main:
                 highlightthickness=0,
             )
             neural_network_canvas.grid(row=1, column=0)
-
+            
+            Frame(right_column, height=50).grid(row=2, column=0)
+            
             Label(
                 right_column,
-                text='Melhor jogo atual:',
+                text="Pontuacao x geracao:",
                 font=FONT_CONFIG,
                 fg=BLACK_COLOR
-            ).grid(row=2, column=0, pady=PADDING)
+            ).grid(row=3, column=0, pady=(0, PADDING))
 
-            best_player_canvas = Canvas(
+            chart_canvas = Canvas(
                 right_column,
-                width=BEST_GAME_SIZE,
-                height=BEST_GAME_SIZE
+                width=CHART_SIZE,
+                height=CHART_SIZE,
+                highlightthickness=0
             )
-            best_player_canvas.grid(row=3, column=0)
+            chart_canvas.grid(row=4, column=0)
 
             Manager(
                 snake_games,

@@ -192,17 +192,17 @@ class UI:
                            BLOCK_SIZE, CHART_SIZE], GRAY_COLOR, 'line')
 
     def update_chart(self, data: list[int]):
-        if len(data) == 0 or max(data) == 0:
-            return
-
         coords: list[Coord] = []
 
         data = data[:]
 
-        while len(data) < 100:
+        while len(data) < 30:
             data.insert(0, 0)
-        while len(data) > 100:
+        while len(data) > 30:
             data.pop(0)
+            
+        if max(data) == 0:
+            return
 
         for i, value in enumerate(data):
             x = i * (CHART_SIZE / (len(data) - 1))

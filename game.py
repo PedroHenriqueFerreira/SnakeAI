@@ -113,6 +113,9 @@ class Game:
 
         self.snake = Snake(self)
         self.food = Food(self)
+        
+        self.lives = 3
+        self.score = 0
 
         self.is_paused = True
 
@@ -140,6 +143,10 @@ class Game:
 
     def start(self):
         self.is_paused = False
+        
+        if (self.lives == 0): 
+            self.lives = 3
+            self.score = 0
 
         self.remove_message()
 
@@ -150,6 +157,10 @@ class Game:
 
     def on_game_over(self, _: Event | None = None):
         self.is_paused = True
+        self.lives -= 1
+        
+        if (self.snake.score > self.score):
+            self.score = self.snake.score
 
         self.create_message(f'Pontuacao: {self.snake.score}')
 
@@ -243,10 +254,7 @@ class Game:
         if self.food.coord is None:
             return [0.0, 0.0]
 
-        return [
-            (self.food.coord[i] - snake_head[i]) / GAME_GRID 
-            for i in range(2)
-        ]
+        return [self.food.coord[i] - snake_head[i] for i in range(2)]
 
     def get_close_objects(self):
         snake_head = self.snake.coords[-1]

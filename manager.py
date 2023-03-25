@@ -40,6 +40,7 @@ class Manager:
         self.best_score_history: list[int] = []
 
         self.neural_network_UI.draw_neural_network(self.snake_games[0].brain)
+        
         self.chart_UI.draw_chart()
         self.best_game_UI.draw_best_game()
 
@@ -119,18 +120,26 @@ class Manager:
         )
 
         self.update_current_alive(current_alive)
-
-        if current_alive == 0:
+        
+        all_snakes_dead = all([snake_game.lives == 0 for snake_game in self.snake_games])
+        
+        if current_alive == 0 and all_snakes_dead:
+            print('TODOS MORRERAM DE VERDADE')
+            
+            print('MELHOR PONTUACAO DA GERACAO: ', self.current_best_score)
             self.best_score_history.append(self.current_best_score)
             self.chart_UI.update_chart(self.best_score_history)
-
             self.update_current_best_score(0)
+                
             self.update_past_generations(self.generation + 1)
 
             self.sort_best_score()
             self.save_data()
             self.generate_mutations()
+            
 
+        if current_alive == 0:
+            if not all_snakes_dead: print('TODOS MORRERAM')
             for snake_game in self.snake_games:
                 snake_game.start()
 
@@ -168,7 +177,7 @@ class Manager:
             return
 
     def sort_best_score(self):
-        def getScore(snake_game): return snake_game.snake.score
+        def getScore(snake_game): return snake_game.score
         self.snake_games.sort(key=getScore, reverse=True)
 
     def generate_mutations(self):
