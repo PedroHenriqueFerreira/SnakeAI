@@ -35,7 +35,7 @@ class Main:
                     fg=BLACK_COLOR
                 ).grid(row=i, column=0, pady=(0, PADDING))
 
-            Frame(left_column, height=340).grid(row=4, column=0)
+            Frame(left_column, height=400).grid(row=4, column=0)
 
             Label(
                 left_column,

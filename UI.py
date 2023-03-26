@@ -198,8 +198,8 @@ class UI:
 
         while len(data) < 30:
             data.insert(0, 0)
-        while len(data) > 30:
-            data.pop(0)
+        # while len(data) > 30:
+        #     data.pop(0)
             
         if max(data) == 0:
             return

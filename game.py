@@ -5,10 +5,9 @@ from neural_network import NeuralNetwork
 
 from UI import UI
 
-from config import BLACK_COLOR, GREEN_COLORS, BLUE_COLOR, RED_COLOR, GAME_GRID, INPUT_LAYER_SIZE, HIDDEN_LAYER_SIZES, OUTPUT_LAYER_SIZE, FPS, GAME_SIZE, WHITE_COLOR, FONT_CONFIG
+from config import *
 
 from custom_types import Coord, Direction
-
 
 class Snake:
     def __init__(self, game: 'Game'):
@@ -18,7 +17,7 @@ class Snake:
 
         self.direction: Direction = 'right'
 
-        self.score = 0
+        self.scores: list[int] = []
         self.energy = 0
 
         self.reset()
@@ -30,7 +29,6 @@ class Snake:
 
         self.direction = 'right'
 
-        self.score = 0
         self.energy = GAME_GRID ** 2
 
         for coord in self.get_initial_coord():
@@ -40,13 +38,13 @@ class Snake:
         self.coords.append(coord)
 
         self.game.UI.draw_pixel(
-            coord, 
-            GAME_SIZE / GAME_GRID, 
-            BLUE_COLOR, 
+            coord,
+            GAME_SIZE / GAME_GRID,
+            BLUE_COLOR,
             'snake'
         )
 
-    def remove_coord(self):
+    def remove_tail(self):
         self.coords.pop(0)
 
         self.game.UI.clear(self.game.UI.find('snake')[0])
@@ -56,6 +54,12 @@ class Snake:
         y = int(GAME_GRID / 2)
 
         return [[x + i, y] for i in range(3)]
+
+    def get_score(self):
+        initial_len = len(self.get_initial_coord())
+        current_len = len(self.coords)
+
+        return current_len - initial_len
 
     def change_direction(self, direction: str):
         match direction.lower():
@@ -104,30 +108,26 @@ class Food:
 
         return choice(availableSpots)
 
-
 class Game:
-    def __init__(self, canvas: Canvas, is_ai: bool = False):
+    def __init__(self, canvas: Canvas, is_AI: bool = False):
         self.UI = UI(canvas)
 
         self.draw_bg()
 
         self.snake = Snake(self)
         self.food = Food(self)
-        
-        self.lives = 3
-        self.score = 0
 
         self.is_paused = True
-
-        self.create_message('Jogar Snake')
 
         self.brain = NeuralNetwork(
             INPUT_LAYER_SIZE,
             HIDDEN_LAYER_SIZES,
             OUTPUT_LAYER_SIZE,
         )
+        
+        self.create_message('Jogar Snake')
 
-        if not is_ai:
+        if not is_AI:
             keys = ['<Up>', '<Right>', '<Down>', '<Left>', 'w', 'd', 's', 'a']
 
             for key in keys:
@@ -143,10 +143,6 @@ class Game:
 
     def start(self):
         self.is_paused = False
-        
-        if (self.lives == 0): 
-            self.lives = 3
-            self.score = 0
 
         self.remove_message()
 
@@ -155,19 +151,18 @@ class Game:
 
         self.move()
 
-    def on_game_over(self, _: Event | None = None):
-        self.is_paused = True
-        self.lives -= 1
+    def on_game_over(self):
+        if len(self.snake.scores) == 3:
+            self.snake.scores.clear()
         
-        if (self.snake.score > self.score):
-            self.score = self.snake.score
+        self.snake.scores.append(self.snake.get_score())
+        
+        if len(self.snake.scores) < 3:
+            return self.start()
 
-        self.create_message(f'Pontuacao: {self.snake.score}')
-
-    def on_finish(self):
         self.is_paused = True
 
-        self.create_message('Parabens!')
+        self.create_message(f'Pontuacao: {max(self.snake.scores)}')
 
     def move(self):
         if self.is_paused:
@@ -181,23 +176,21 @@ class Game:
             case 'left': snake_head[0] -= 1
             case 'right': snake_head[0] += 1
 
-        self.snake.add_coord(snake_head)
-
-        isBodyColiding = snake_head in self.snake.coords[:-1]
+        isBodyColiding = snake_head in self.snake.coords
         isWallColiding = -1 in snake_head or GAME_GRID in snake_head
 
         if isBodyColiding or isWallColiding or self.snake.energy == 0:
             return self.on_game_over()
-        elif len(self.snake.coords) == GAME_GRID ** 2:
-            return self.on_finish()
+
+        self.snake.add_coord(snake_head)
 
         if snake_head == self.food.coord:
             self.food.reset()
 
-            self.snake.score += 1
             self.snake.energy = GAME_GRID ** 2
         else:
-            self.snake.remove_coord()
+            self.snake.remove_tail()
+
             self.snake.energy -= 1
 
         self.UI.canvas.after(int(1000 / FPS), self.move)
@@ -250,28 +243,8 @@ class Game:
 
     def get_food_distance(self):
         snake_head = self.snake.coords[-1]
-        
+
         if self.food.coord is None:
             return [0.0, 0.0]
 
-        return [self.food.coord[i] - snake_head[i] for i in range(2)]
-
-    def get_close_objects(self):
-        snake_head = self.snake.coords[-1]
-        objects: list[float] = []
-
-        for x in range(-1, 2):
-            for y in range(-1, 2):
-                coord = [snake_head[0] + x, snake_head[1] + y]
-
-                if coord == snake_head:
-                    continue
-
-                if -1 in coord or GAME_GRID in coord or coord in self.snake.coords:
-                    objects.append(-1.0)
-                elif coord == self.food.coord:
-                    objects.append(1.0)
-                else:
-                    objects.append(0.0)
-
-        return objects
+        return [(self.food.coord[i] - snake_head[i]) / GAME_GRID for i in range(2)]
