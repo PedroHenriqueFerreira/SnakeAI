@@ -11,7 +11,7 @@ class Chart:
     def draw(self):
         block_size = CHART_SIZE / CHART_GRID
 
-        for i in range(CHART_GRID):
+        for i in range(CHART_GRID + 1):
             pos = i * block_size
 
             self.UI.draw_line([0, pos], [CHART_SIZE, pos], GRAY_COLOR, 'line')

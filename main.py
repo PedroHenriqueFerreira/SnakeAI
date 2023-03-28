@@ -9,9 +9,10 @@ from config import *
 class Main:
     def __init__(self, is_AI: bool = False):
         win = Tk()
+        win.config(bg='#222222')
         win.title('Snake Game')
 
-        root = Frame(win)
+        root = Frame(win, bg="#222222")
         root.pack(expand=1)
 
         if not is_AI:
@@ -20,7 +21,7 @@ class Main:
 
             SnakeGame(canvas)
         else:
-            header = Frame(root)
+            header = Frame(root, bg="#222222")
             header.grid(row=0, column=0, columnspan=2)
 
             best_score = StringVar(value=BEST_SCORE_TEXT)
@@ -33,10 +34,11 @@ class Main:
                     header,
                     textvariable=text,
                     font=DEFAULT_FONT,
-                    fg=BLACK_COLOR
+                    fg=WHITE_COLOR, 
+                    bg="#222222"
                 ).grid(row=0, column=i, padx=PADDING, pady=PADDING)
 
-            right_column = Frame(root)
+            right_column = Frame(root, bg="#222222")
             right_column.grid(row=1, column=1, padx=PADDING)
 
             best_player_canvas = Canvas(
@@ -52,7 +54,8 @@ class Main:
                 right_column,
                 width=CHART_SIZE,
                 height=CHART_SIZE,
-                highlightthickness=0
+                highlightthickness=0,
+                bg="#222222"
             )
             chart_canvas.grid(row=1, column=0, padx=PADDING, pady=PADDING)
             
@@ -60,12 +63,13 @@ class Main:
                 right_column,
                 width=NEURAL_NETWORK_SIZE,
                 height=NEURAL_NETWORK_SIZE,
-                highlightthickness=0
+                highlightthickness=0,
+                bg="#222222"
             )
             neural_network_canvas.grid(
                 row=2, column=0, padx=PADDING, pady=PADDING)
 
-            left_column = Frame(root)
+            left_column = Frame(root, bg="#222222")
             left_column.grid(row=1, column=0, padx=PADDING)
 
             snake_games: list[SnakeGame] = []
