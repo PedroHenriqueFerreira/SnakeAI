@@ -1,26 +1,27 @@
 from tkinter import Tk, Canvas, Frame, Label, StringVar
 
-from game import Game
+from game import SnakeGame
 from manager import Manager
 
-from config import GAMES_HORIZONTAL_GRID, GAMES_VERTICAL_GRID, BEST_SCORE_TEXT, CURRENT_BEST_SCORE_TEXT, CURRENT_ALIVE_TEXT, PAST_GENERATIONS_TEXT, PADDING, GAME_SIZE, FONT_CONFIG, BLACK_COLOR, CHART_SIZE, NEURAL_NETWORK_SIZE, BEST_GAME_SIZE
+from config import *
+
 
 class Main:
-    def __init__(self, is_ai: bool = False):
+    def __init__(self, is_AI: bool = False):
         win = Tk()
         win.title('Snake Game')
 
         root = Frame(win)
         root.pack(expand=1)
 
-        if not is_ai:
+        if not is_AI:
             canvas = Canvas(root, width=GAME_SIZE, height=GAME_SIZE)
             canvas.pack(expand=1)
 
-            Game(canvas)
+            SnakeGame(canvas)
         else:
-            left_column = Frame(root)
-            left_column.grid(row=0, column=0, padx=(0, PADDING))
+            header = Frame(root)
+            header.grid(row=0, column=0, columnspan=2)
 
             best_score = StringVar(value=BEST_SCORE_TEXT)
             current_best_score = StringVar(value=CURRENT_BEST_SCORE_TEXT)
@@ -29,72 +30,23 @@ class Main:
 
             for i, text in enumerate([best_score, current_best_score, current_alive, past_generations]):
                 Label(
-                    left_column,
+                    header,
                     textvariable=text,
-                    font=FONT_CONFIG,
+                    font=DEFAULT_FONT,
                     fg=BLACK_COLOR
-                ).grid(row=i, column=0, pady=(0, PADDING))
-
-            Frame(left_column, height=400).grid(row=4, column=0)
-
-            Label(
-                left_column,
-                text='Jogo do melhor individuo:',
-                font=FONT_CONFIG,
-                fg=BLACK_COLOR
-            ).grid(row=5, column=0, pady=(0, PADDING))
-
-            best_player_canvas = Canvas(
-                left_column,
-                width=BEST_GAME_SIZE,
-                height=BEST_GAME_SIZE
-            )
-            best_player_canvas.grid(row=6, column=0)
-
-            center_column = Frame(root)
-            center_column.grid(row=0, column=1)
-
-            snake_games: list[Game] = []
-
-            for x in range(GAMES_VERTICAL_GRID):
-                for y in range(GAMES_HORIZONTAL_GRID):
-                    game_canvas = Canvas(
-                        center_column,
-                        width=GAME_SIZE,
-                        height=GAME_SIZE,
-                        highlightthickness=0
-                    )
-
-                    game_canvas.grid(row=x, column=y, padx=2, pady=2)
-
-                    snake_games.append(Game(game_canvas, True))
+                ).grid(row=0, column=i, padx=PADDING, pady=PADDING)
 
             right_column = Frame(root)
-            right_column.grid(row=0, column=2, padx=(PADDING, 0))
-            
-            Label(
-                right_column,
-                text='Rede neural do melhor individuo:',
-                font=FONT_CONFIG,
-                fg=BLACK_COLOR
-            ).grid(row=0, column=0, pady=(0, PADDING))
+            right_column.grid(row=1, column=1)
 
-            neural_network_canvas = Canvas(
+            best_player_canvas = Canvas(
                 right_column,
-                width=NEURAL_NETWORK_SIZE,
-                height=NEURAL_NETWORK_SIZE,
-                highlightthickness=0,
+                width=BEST_GAME_SIZE,
+                height=BEST_GAME_SIZE,
+                highlightthickness=0
             )
-            neural_network_canvas.grid(row=1, column=0)
-            
-            Frame(right_column, height=50).grid(row=2, column=0)
-            
-            Label(
-                right_column,
-                text="Pontuacao x geracao:",
-                font=FONT_CONFIG,
-                fg=BLACK_COLOR
-            ).grid(row=3, column=0, pady=(0, PADDING))
+            best_player_canvas.grid(
+                row=0, column=0, padx=PADDING, pady=PADDING)
 
             chart_canvas = Canvas(
                 right_column,
@@ -102,7 +54,35 @@ class Main:
                 height=CHART_SIZE,
                 highlightthickness=0
             )
-            chart_canvas.grid(row=4, column=0)
+            chart_canvas.grid(row=1, column=0, padx=PADDING, pady=PADDING)
+            
+            neural_network_canvas = Canvas(
+                right_column,
+                width=NEURAL_NETWORK_SIZE,
+                height=NEURAL_NETWORK_SIZE,
+                highlightthickness=0
+            )
+            neural_network_canvas.grid(
+                row=2, column=0, padx=PADDING, pady=PADDING)
+
+            left_column = Frame(root)
+            left_column.grid(row=1, column=0)
+
+            snake_games: list[SnakeGame] = []
+
+            for x in range(GAMES_GRID):
+                for y in range(GAMES_GRID):
+                    game_canvas = Canvas(
+                        left_column,
+                        width=GAME_SIZE,
+                        height=GAME_SIZE,
+                        highlightthickness=0
+                    )
+
+                    game_canvas.grid(row=x, column=y, padx=2, pady=2)
+
+                    snake_games.append(
+                        SnakeGame(game_canvas, best_player_canvas, True))
 
             Manager(
                 snake_games,
@@ -119,7 +99,7 @@ class Main:
 
         win.mainloop()
 
-    def center_win(self, win):
+    def center_win(self, win: Tk):
         win.update()
 
         win_width = win.winfo_width()
