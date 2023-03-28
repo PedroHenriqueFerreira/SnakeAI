@@ -37,7 +37,7 @@ class Main:
                 ).grid(row=0, column=i, padx=PADDING, pady=PADDING)
 
             right_column = Frame(root)
-            right_column.grid(row=1, column=1)
+            right_column.grid(row=1, column=1, padx=PADDING)
 
             best_player_canvas = Canvas(
                 right_column,
@@ -66,7 +66,7 @@ class Main:
                 row=2, column=0, padx=PADDING, pady=PADDING)
 
             left_column = Frame(root)
-            left_column.grid(row=1, column=0)
+            left_column.grid(row=1, column=0, padx=PADDING)
 
             snake_games: list[SnakeGame] = []
 
