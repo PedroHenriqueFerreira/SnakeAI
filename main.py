@@ -61,8 +61,8 @@ class Main:
             
             neural_network_canvas = Canvas(
                 right_column,
-                width=NEURAL_NETWORK_SIZE,
-                height=NEURAL_NETWORK_SIZE,
+                width=NEURAL_NETWORK_WIDTH,
+                height=NEURAL_NETWORK_HEIGHT,
                 highlightthickness=0,
                 bg="#222222"
             )

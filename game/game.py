@@ -156,7 +156,7 @@ class SnakeGame:
         if self.food.coord is None:
             return [0.0, 0.0]
 
-        return [(self.food.coord[i] - snake_head[i]) / GAME_SIZE for i in range(2)]
+        return [(self.food.coord[i] - snake_head[i]) for i in range(2)]
 
     def get_close_objects(self):
         objects = []

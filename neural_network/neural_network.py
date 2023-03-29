@@ -109,15 +109,15 @@ class NeuralNetwork:
 
         max_layer_size = max([len(layer.neurons) for layer in layers])
         
-        x_margin = (NEURAL_NETWORK_SIZE - NEURON_SIZE * len(layers)) / (len(layers) - 1)
-        y_margin = (NEURAL_NETWORK_SIZE - NEURON_SIZE * max_layer_size) / (max_layer_size - 1)
+        x_margin = (NEURAL_NETWORK_WIDTH - NEURON_SIZE * len(layers)) / (len(layers) - 1)
+        y_margin = (NEURAL_NETWORK_HEIGHT - NEURON_SIZE * max_layer_size) / (max_layer_size - 1)
 
         for layer_idx, layer in enumerate(layers):
             row: list[int] = []
 
             layer_size = len(layer.neurons)
 
-            top = (NEURAL_NETWORK_SIZE - (layer_size * NEURON_SIZE + (layer_size - 1) * y_margin)) / 2
+            top = (NEURAL_NETWORK_HEIGHT - (layer_size * NEURON_SIZE + (layer_size - 1) * y_margin)) / 2
 
             for neuron_idx, neuron in enumerate(layer.neurons):
                 x = layer_idx * NEURON_SIZE + layer_idx * x_margin
