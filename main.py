@@ -19,7 +19,7 @@ class Main:
             canvas = Canvas(root, width=GAME_SIZE, height=GAME_SIZE)
             canvas.pack(expand=1)
 
-            SnakeGame(canvas)
+            SnakeGame(canvas, canvas)
         else:
             header = Frame(root, bg="#222222")
             header.grid(row=0, column=0, columnspan=2)

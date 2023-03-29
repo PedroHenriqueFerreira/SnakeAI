@@ -14,8 +14,8 @@ class Chart:
         for i in range(CHART_GRID + 1):
             pos = i * block_size
 
-            self.UI.draw_line([0, pos], [CHART_SIZE, pos], GRAY_COLOR, 'line')
-            self.UI.draw_line([pos, 0], [pos, CHART_SIZE], GRAY_COLOR, 'line')
+            self.UI.draw_line([0, pos], [CHART_SIZE, pos], BLACK_COLOR, 'line')
+            self.UI.draw_line([pos, 0], [pos, CHART_SIZE], BLACK_COLOR, 'line')
 
     def draw_update(self, values: list[float]):
         coords: list[list[float]] = []

@@ -55,17 +55,23 @@ class SnakeGame:
         self.move()
 
     def on_game_over(self):
-        if len(self.snake.scores) == LIVES:
-            self.snake.scores.clear()
+        if self.snake.lives == 0:
+            self.snake.score = 0
+            self.snake.lives = LIVES
         
-        self.snake.scores.append(self.snake.get_score())
+        current_score = self.snake.get_score()
         
-        if len(self.snake.scores) < LIVES:
+        if (current_score > self.snake.score):
+            self.snake.score = current_score
+        
+        self.snake.lives -= 1
+        
+        if self.snake.lives > 0:
             return self.start()
 
         self.is_paused = True
 
-        self.create_message(f'Pontuacao: {max(self.snake.scores)}')
+        self.create_message(f'Pontuacao: {self.snake.score}')
 
     def move(self):
         if self.is_paused:
@@ -150,25 +156,26 @@ class SnakeGame:
         if self.food.coord is None:
             return [0.0, 0.0]
 
-        return [(self.food.coord[i] - snake_head[i]) for i in range(2)]
+        return [(self.food.coord[i] - snake_head[i]) / GAME_SIZE for i in range(2)]
 
     def get_close_objects(self):
         objects = []
         
         snake_head = self.snake.coords[-1]
+        snake_neck = self.snake.coords[-2]
         
         for x in range(-1, 2):
             for y in range(-1, 2):
                 coord = [snake_head[0] + x, snake_head[1] + y]
                 
-                if coord == snake_head:
+                if coord == snake_head or coord == snake_neck:
                     continue
                 
-                if coord in self.snake.coords:
+                if coord in self.snake.coords or -1 in coord or GAME_GRID in coord:
+                    objects.append(0)
                     objects.append(1)
-                elif -1 in coord or GAME_GRID in coord:
-                    objects.append(-1)
                 else:
+                    objects.append(1)
                     objects.append(0)
                 
         return objects

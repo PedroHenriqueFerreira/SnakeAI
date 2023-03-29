@@ -106,8 +106,8 @@ class Manager:
 
             snake_game.key_event(event)
 
-            current_score = 0 if len(snake_game.snake.scores) == 0 else max(snake_game.snake.scores)
-            best_snake_score = 0 if len(self.snake_games[best_index].snake.scores) == 0 else max(self.snake_games[best_index].snake.scores)
+            current_score = snake_game.snake.score
+            best_snake_score = self.snake_games[best_index].snake.score
 
             if (current_score > self.best_score):
                 self.update_best_score(current_score)
@@ -137,6 +137,7 @@ class Manager:
             self.generate_mutations()
             
             for snake_game in self.snake_games:
+                snake_game.snake.score = 0
                 snake_game.start()
 
         self.snake_games[0].UI.after(FPS, self.main_loop)
@@ -173,10 +174,10 @@ class Manager:
             return
 
     def sort_best_score(self):
-        def getScore(snake_game: SnakeGame):
-            return 0 if len(snake_game.snake.scores) == 0 else max(snake_game.snake.scores)
-        
-        self.snake_games.sort(key=getScore, reverse=True)
+        self.snake_games.sort(
+            key=lambda snake_game: snake_game.snake.score, 
+            reverse=True
+        )
 
     def generate_mutations(self):
         for i, snake_game in enumerate(self.snake_games[BEST_PLAYERS:]):

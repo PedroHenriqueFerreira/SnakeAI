@@ -13,8 +13,9 @@ class Snake:
 
         self.direction: Literal['up', 'right', 'down', 'left'] = 'right'
 
-        self.scores: list[int] = []
+        self.lives = LIVES
         
+        self.score = 0
         self.energy = 0
 
         self.reset()
