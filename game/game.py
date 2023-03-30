@@ -154,9 +154,22 @@ class SnakeGame:
         snake_head = self.snake.coords[-1]
 
         if self.food.coord is None:
-            return [0.0, 0.0]
+            return [0, 0, 0, 0]
 
-        return [(self.food.coord[i] - snake_head[i]) for i in range(2)]
+        data: list[int] = []
+
+        for i in range(2):
+            if self.food.coord[i] - snake_head[i] < 0:
+                data.append(1)
+                data.append(0)
+            elif self.food.coord[i] - snake_head[i] > 0: 
+                data.append(0)
+                data.append(1)
+            else:
+                data.append(0)
+                data.append(0)
+
+        return data
 
     def get_close_objects(self):
         objects = []
