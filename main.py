@@ -1,120 +1,111 @@
-from tkinter import Tk, Canvas, Frame, Label, StringVar
+from tkinter import Tk, Canvas, Frame, Label, StringVar, Misc
 
-from game import SnakeGame
+from snake_game import SnakeGame
 from manager import Manager
 
 from config import *
 
-
 class Main:
     def __init__(self, is_AI: bool = False):
-        win = Tk()
-        win.config(bg='#222222')
-        win.title('Snake Game')
+        self.win = self.create_win()
 
-        root = Frame(win, bg="#222222")
-        root.pack(expand=1)
+        main = Frame(self.win, bg=BG_COLOR)
+        main.pack(expand=1)
 
         if not is_AI:
-            canvas = Canvas(root, width=GAME_SIZE, height=GAME_SIZE)
+            canvas = Canvas(main, width=GAME_SIZE, height=GAME_SIZE)
             canvas.pack(expand=1)
 
-            SnakeGame(canvas, canvas)
+            SnakeGame(canvas)
         else:
-            header = Frame(root, bg="#222222")
-            header.grid(row=0, column=0, columnspan=2)
+            header = self.create_frame(main, [0, 0])
 
-            best_score = StringVar(value=BEST_SCORE_TEXT)
-            current_best_score = StringVar(value=CURRENT_BEST_SCORE_TEXT)
-            current_alive = StringVar(value=CURRENT_ALIVE_TEXT)
-            past_generations = StringVar(value=PAST_GENERATIONS_TEXT)
+            record_text = StringVar(value=RECORD_TEXT)
+            score_text = StringVar(value=SCORE_TEXT)
+            alive_text = StringVar(value=ALIVE_TEXT)
+            generation_text = StringVar(value=GENERATION_TEXT)
 
-            for i, text in enumerate([best_score, current_best_score, current_alive, past_generations]):
-                Label(
+            for i, text in enumerate([record_text, score_text, alive_text, generation_text]):
+                label = Label(
                     header,
                     textvariable=text,
                     font=DEFAULT_FONT,
-                    fg=WHITE_COLOR, 
-                    bg="#222222"
-                ).grid(row=0, column=i, padx=PADDING, pady=PADDING)
+                    fg=LIGHT_COLOR, 
+                    bg=BG_COLOR
+                )
+                
+                label.grid(row=0, column=i, padx=PADDING, pady=PADDING)
 
-            right_column = Frame(root, bg="#222222")
-            right_column.grid(row=1, column=1, padx=PADDING)
+            body = self.create_frame(main, [1, 0])
+            body.grid(pady=0)
 
-            best_player_canvas = Canvas(
-                right_column,
-                width=BEST_GAME_SIZE,
-                height=BEST_GAME_SIZE,
-                highlightthickness=0
-            )
-            best_player_canvas.grid(
-                row=0, column=0, padx=PADDING, pady=PADDING)
-
-            chart_canvas = Canvas(
-                right_column,
-                width=CHART_SIZE,
-                height=CHART_SIZE,
-                highlightthickness=0,
-                bg="#222222"
-            )
-            chart_canvas.grid(row=1, column=0, padx=PADDING, pady=PADDING)
-            
-            neural_network_canvas = Canvas(
-                right_column,
-                width=NEURAL_NETWORK_WIDTH,
-                height=NEURAL_NETWORK_HEIGHT,
-                highlightthickness=0,
-                bg="#222222"
-            )
-            neural_network_canvas.grid(
-                row=2, column=0, padx=PADDING, pady=PADDING)
-
-            left_column = Frame(root, bg="#222222")
-            left_column.grid(row=1, column=0, padx=PADDING)
-
+            games_container = self.create_frame(body, [0, 0])
             snake_games: list[SnakeGame] = []
 
-            for x in range(GAMES_GRID):
-                for y in range(GAMES_GRID):
-                    game_canvas = Canvas(
-                        left_column,
-                        width=GAME_SIZE,
-                        height=GAME_SIZE,
-                        highlightthickness=0
-                    )
+            for x in range(GAMES_ROW_GRID):
+                for y in range(GAMES_COLUMN_GRID):
+                    canvas = self.create_canvas(games_container, GAME_SIZE, [x, y])
+                    canvas.grid(padx=PADDING / 2, pady=PADDING / 2)
 
-                    game_canvas.grid(row=x, column=y, padx=2, pady=2)
+                    snake_games.append(SnakeGame(canvas, True))
 
-                    snake_games.append(
-                        SnakeGame(game_canvas, best_player_canvas, True))
+            data_container = self.create_frame(body, [0, 1])
+            
+            best_game_canvas = self.create_canvas(data_container, BEST_GAME_SIZE, [0, 0])            
+            chart_canvas = self.create_canvas(data_container, CHART_SIZE, [1, 0])
+            neural_network_canvas = self.create_canvas(data_container, NEURAL_NETWORK_SIZE, [2, 0])
 
             Manager(
                 snake_games,
                 neural_network_canvas,
                 chart_canvas,
-                best_player_canvas,
-                best_score,
-                current_best_score,
-                current_alive,
-                past_generations
+                best_game_canvas,
+                record_text,
+                score_text,
+                alive_text,
+                generation_text
             )
 
-        self.center_win(win)
+        self.center_win()
+        self.win.mainloop()
 
-        win.mainloop()
+    def create_frame(self, parent: Misc, coord: list[int]):
+        frame = Frame(parent, bg=BG_COLOR)
+        frame.grid(row=coord[0], column=coord[1], padx=PADDING, pady=PADDING)
+        
+        return frame
 
-    def center_win(self, win: Tk):
-        win.update()
+    def create_canvas(self, parent: Misc, size: int, coord: list[int]):
+        canvas = Canvas(
+            parent, 
+            width=size, 
+            height=size, 
+            highlightthickness=0,
+            bg=BG_COLOR
+        )
+        
+        canvas.grid(row=coord[0], column=coord[1], padx=PADDING, pady=PADDING)
+        
+        return canvas
 
-        win_width = win.winfo_width()
-        win_height = win.winfo_height()
-        screen_width = win.winfo_screenwidth()
-        screen_height = win.winfo_screenheight()
+    def create_win(self):        
+        win = Tk()
+        win.config(bg=BG_COLOR)
+        win.title(TITLE)
+        
+        return win
+
+    def center_win(self):
+        self.win.update()
+
+        win_width = self.win.winfo_width()
+        win_height = self.win.winfo_height()
+        screen_width = self.win.winfo_screenwidth()
+        screen_height = self.win.winfo_screenheight()
 
         win_x = int((screen_width - win_width) / 2)
         win_y = int((screen_height - win_height) / 2)
 
-        win.geometry(f'{win_width}x{win_height}+{win_x}+{win_y}')
-
+        self.win.geometry(f'{win_width}x{win_height}+{win_x}+{win_y}')
 
 Main(True)

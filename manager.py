@@ -1,13 +1,11 @@
 from tkinter import Event, StringVar, Canvas
 
-from game import SnakeGame
-from neural_network import NeuralNetwork
-
-from chart import Chart
+from snake_game import SnakeGame
 
 from UI import UI
 
 from config import *
+
 
 class Manager:
     def __init__(
@@ -16,173 +14,162 @@ class Manager:
         neural_network_canvas: Canvas,
         chart_canvas: Canvas,
         best_game_canvas: Canvas,
-        best_score_text: StringVar,
-        current_best_score_text: StringVar,
-        current_alive_text: StringVar,
-        past_generations_text: StringVar,
+        record_text: StringVar,
+        score_text: StringVar,
+        alive_text: StringVar,
+        generation_text: StringVar,
     ):
-        self.chart = Chart(chart_canvas)
-
         self.snake_games = snake_games
 
-        self.best_score_text = best_score_text
-        self.current_best_score_text = current_best_score_text
-        self.current_alive_text = current_alive_text
-        self.past_generations_text = past_generations_text
+        self.chart_UI = UI(chart_canvas)
+        self.chart_UI.draw_chart([])
+        
+        self.neural_network_UI = UI(neural_network_canvas)
+        self.best_game_UI = UI(best_game_canvas)
 
-        self.best_score = 0
-        self.current_best_score = 0
-        self.current_alive = 0
+        self.record_text = record_text
+        self.score_text = score_text
+        self.alive_text = alive_text
+        self.generation_text = generation_text
+
+        self.score = 0
+        self.record = 0
         self.generation = 0
 
-        self.best_score_history: list[int] = []
+        self.score_history: list[int] = []
 
         for snake_game in snake_games:
-            snake_game.brain = NeuralNetwork(
-                neural_network_canvas, 
-                INPUT_LAYER_SIZE, 
-                HIDDEN_LAYER_SIZES, 
-                OUTPUT_LAYER_SIZE,
-                ACTIVATION_FUNCTION
-            )
-            
-            snake_game.start()
-            
-        self.snake_games[0].brain.draw()
-        self.snake_games[0].draw_best_game()
-        self.chart.draw()
+            snake_game.play()
 
         self.load_data()
         self.main_loop()
 
-    def update_best_score(self, value: int):
-        self.best_score = value
-        new_text = BEST_SCORE_TEXT.replace('0', str(value))
-        self.best_score_text.set(new_text)
-
-    def update_current_best_score(self, value: int):
-        self.current_best_score = value
-        new_text = CURRENT_BEST_SCORE_TEXT.replace('0', str(value))
-        self.current_best_score_text.set(new_text)
-
-    def update_current_alive(self, value: int):
-        self.current_alive = value
-        new_text = CURRENT_ALIVE_TEXT.replace('0', str(value))
-        self.current_alive_text.set(new_text)
-
-    def update_past_generations(self, value: int):
+    def update_generation(self, value: int):
         self.generation = value
-        new_text = PAST_GENERATIONS_TEXT.replace('0', str(value))
-        self.past_generations_text.set(new_text)
+        self.generation_text.set(GENERATION_TEXT.replace('0', str(value)))
+
+    def update_score(self, value: int):
+        self.score = value
+        self.score_text.set(SCORE_TEXT.replace('0', str(value)))
+
+    def update_record(self, value: int):
+        self.record = value
+        self.record_text.set(RECORD_TEXT.replace('0', str(value)))
+
+    def update_alive(self, value: int):
+        self.alive_text.set(ALIVE_TEXT.replace('0', str(value)))
 
     def transform_output(self, output: list[float]):
         if output[0] > 0:
-            return 'right'
-        elif output[1] > 0:
-            return 'down'
-        elif output[2] > 0:
-            return 'left'
-        elif output[3] > 0:
             return 'up'
+        elif output[1] > 0:
+            return 'right'
+        elif output[2] > 0:
+            return 'down'
+        elif output[3] > 0:
+            return 'left'
 
         return 'right'
 
     def main_loop(self):
-        current_alive = 0
-        best_index = 0
+        alive = 0
+        best_game_idx = 0
 
         for i, snake_game in enumerate(self.snake_games):
             if snake_game.is_paused:
                 continue
 
-            current_alive += 1
-
+            alive += 1
+            
+            neural_network = snake_game.neural_network
+            
+            neural_network.input_layer.set_values(snake_game.get_values())
+            output = self.transform_output(neural_network.calculate_output())
+            
             event: Event = Event()
+            event.keysym = output
+            snake_game.on_key_event(event)
 
-            values = snake_game.get_food_distance() + snake_game.get_close_objects()
+            if (snake_game.score > self.record):
+                self.record = snake_game.score
 
-            snake_game.brain.input_layer.set_output(values)
-            event.keysym = self.transform_output(snake_game.brain.calculate_output())
+            if (snake_game.score > self.score):
+                self.score = snake_game.score
 
-            snake_game.key_event(event)
+            if self.snake_games[best_game_idx].is_paused:
+                best_game_idx = i
 
-            current_score = snake_game.snake.score
-            best_snake_score = self.snake_games[best_index].snake.score
+            if snake_game.score > self.snake_games[best_game_idx].score:
+                best_game_idx = i
 
-            if (current_score > self.best_score):
-                self.update_best_score(current_score)
+        best_game = self.snake_games[best_game_idx]
 
-            if (current_score > self.current_best_score):
-                self.update_current_best_score(current_score)
+        self.best_game_UI.draw_best_game(best_game)
+        self.neural_network_UI.draw_neural_network(best_game.neural_network)
 
-            if current_score > best_snake_score or self.snake_games[best_index].is_paused:
-                best_index = i
-        
-        self.snake_games[best_index].brain.draw_update()
+        self.update_record(self.record)
+        self.update_score(self.score)
+        self.update_alive(alive)
 
-        self.snake_games[best_index].update_best_game()
+        if alive == 0:
+            self.score_history.append(self.score)
+            self.chart_UI.draw_chart(self.score_history)
 
-        self.update_current_alive(current_alive)
-        
-        if current_alive == 0:
-            self.best_score_history.append(self.current_best_score)
-            self.chart.draw_update(self.best_score_history)
-            
-            self.update_current_best_score(0)
-                
-            self.update_past_generations(self.generation + 1)
+            self.update_generation(self.generation + 1)
+            self.update_score(0)
 
-            self.sort_best_score()
+            self.sort_snake_games()
             self.save_data()
-            self.generate_mutations()
             
-            for snake_game in self.snake_games:
-                snake_game.snake.score = 0
-                snake_game.start()
+            self.generate_mutations()
 
-        self.snake_games[0].UI.after(FPS, self.main_loop)
+            for snake_game in self.snake_games:
+                snake_game.play()
+
+        self.snake_games[0].UI.after(SPEED, self.main_loop)
 
     def save_data(self):
-        best_players = self.snake_games[0:BEST_PLAYERS]
+        best_players = self.snake_games[0:BEST_PLAYERS_SELECT]
+        best_players_DNA = [snake_game.neural_network.get_DNA() for snake_game in best_players]
 
-        data: dict = {
-            'best_players_dna': [snake_game.brain.get_DNA() for snake_game in best_players],
-            'best_score': self.best_score,
+        data = {
+            'best_players_DNA': best_players_DNA,
+            'record': self.record,
             'generation': self.generation,
-            'best_score_history': self.best_score_history
+            'score_history': self.score_history
         }
 
-        with open(FILE_SAVE_PATH, 'w') as f:
-            f.write(str(data))
+        with open(DATA_FILE, 'w') as file:
+            file.write(str(data))
 
     def load_data(self):
         try:
-            with open(FILE_SAVE_PATH, 'r') as f:
-                data: dict = eval(f.read())
+            with open(DATA_FILE, 'r') as file:
+                data = eval(file.read())
 
-                self.update_best_score(data['best_score'])
-                self.update_past_generations(data['generation'])
+                for i, DNA in enumerate(data['best_players_DNA']):
+                    self.snake_games[i].neural_network.set_DNA(DNA)
+                    
+                self.update_record(data['record'])
+                self.update_generation(data['generation'])
 
-                self.best_score_history = data['best_score_history']
-                self.chart.draw_update(self.best_score_history)
-
-                for i, snake_game in enumerate(self.snake_games[0:BEST_PLAYERS]):
-                    snake_game.brain.set_DNA(data['best_players_dna'][i])
+                self.score_history = data['score_history']
+                self.chart_UI.draw_chart(self.score_history)
 
                 self.generate_mutations()
         finally:
             return
 
-    def sort_best_score(self):
+    def sort_snake_games(self):
         self.snake_games.sort(
-            key=lambda snake_game: snake_game.snake.score, 
+            key=lambda snake_game: snake_game.best_score,
             reverse=True
         )
 
     def generate_mutations(self):
-        for i, snake_game in enumerate(self.snake_games[BEST_PLAYERS:]):
-            index = i % BEST_PLAYERS
-            dna = self.snake_games[index].brain.get_DNA()
-            
-            snake_game.brain.set_DNA(dna)
-            snake_game.brain.generate_DNA_mutation()
+        for i, snake_game in enumerate(self.snake_games[BEST_PLAYERS_SELECT:]):
+            index = i % BEST_PLAYERS_SELECT
+            DNA = self.snake_games[index].neural_network.get_DNA()
+
+            snake_game.neural_network.set_DNA(DNA)
+            snake_game.neural_network.generate_DNA_mutation()

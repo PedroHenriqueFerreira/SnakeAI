@@ -13,8 +13,6 @@ class Food:
 
         self.coord: list[float] | None = None
 
-        self.reset()
-
     def reset(self):
         self.game.UI.clear('food')
 
