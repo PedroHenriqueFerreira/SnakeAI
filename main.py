@@ -13,31 +13,18 @@ class Main:
         main.pack(expand=1)
 
         if not is_AI:
-            canvas = Canvas(main, width=GAME_SIZE, height=GAME_SIZE)
-            canvas.pack(expand=1)
-
+            canvas = self.create_canvas(main, GAME_SIZE, [0, 0])
             SnakeGame(canvas)
         else:
             header = self.create_frame(main, [0, 0])
 
-            record_text = StringVar(value=RECORD_TEXT)
-            score_text = StringVar(value=SCORE_TEXT)
-            alive_text = StringVar(value=ALIVE_TEXT)
-            generation_text = StringVar(value=GENERATION_TEXT)
+            record_text, score_text = StringVar(value=RECORD_TEXT), StringVar(value=SCORE_TEXT)
+            alive_text, generation_text = StringVar(value=ALIVE_TEXT), StringVar(value=GENERATION_TEXT)
 
             for i, text in enumerate([record_text, score_text, alive_text, generation_text]):
-                label = Label(
-                    header,
-                    textvariable=text,
-                    font=DEFAULT_FONT,
-                    fg=LIGHT_COLOR, 
-                    bg=BG_COLOR
-                )
-                
-                label.grid(row=0, column=i, padx=PADDING, pady=PADDING)
+                self.create_label(header, text, [0, i])
 
             body = self.create_frame(main, [1, 0])
-            body.grid(pady=0)
 
             games_container = self.create_frame(body, [0, 0])
             snake_games: list[SnakeGame] = []
@@ -68,6 +55,12 @@ class Main:
 
         self.center_win()
         self.win.mainloop()
+
+    def create_label(self, parent: Misc, text: StringVar, coord: list[int]):
+        label = Label(parent, textvariable=text, fg=LIGHT_COLOR, bg=BG_COLOR, font=DEFAULT_FONT)
+        label.grid(row=coord[0], column=coord[1], padx=PADDING, pady=PADDING)
+        
+        return label
 
     def create_frame(self, parent: Misc, coord: list[int]):
         frame = Frame(parent, bg=BG_COLOR)

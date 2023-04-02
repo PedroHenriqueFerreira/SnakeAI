@@ -6,7 +6,6 @@ from UI import UI
 
 from config import *
 
-
 class Manager:
     def __init__(
         self,
