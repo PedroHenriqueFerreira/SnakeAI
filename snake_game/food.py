@@ -14,19 +14,19 @@ class Food:
         self.coord: list[float] | None = None
 
     def reset(self):
-        self.game.UI.clear('food')
+        self.game.canvas.delete('food')
 
         self.coord = self.get_random_coord()
 
         if self.coord is None:
             return
 
-        self.game.UI.draw_pixel(
+        self.game.canvas.draw_pixel(
             self.coord,
             GAME_SIZE / GAME_GRID,
             RED_COLOR,
             'food'
-        )
+        ) 
 
     def get_random_coord(self):
         availableSpots: list[list[float]] = self.game.get_available_coords()

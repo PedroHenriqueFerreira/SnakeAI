@@ -1,8 +1,6 @@
-from tkinter import Event, StringVar, Canvas
-
 from snake_game import SnakeGame
 
-from UI import UI
+from UI import Canvas, Label, Event
 
 from config import *
 
@@ -13,50 +11,31 @@ class Manager:
         neural_network_canvas: Canvas,
         chart_canvas: Canvas,
         best_game_canvas: Canvas,
-        record_text: StringVar,
-        score_text: StringVar,
-        alive_text: StringVar,
-        generation_text: StringVar,
+        generation_label: Label,
+        record_label: Label,
+        score_label: Label,
+        alive_label: Label
     ):
         self.snake_games = snake_games
 
-        self.chart_UI = UI(chart_canvas)
-        self.chart_UI.draw_chart([])
+        self.chart_canvas = chart_canvas
+        self.neural_network_canvas = neural_network_canvas
+        self.best_game_canvas = best_game_canvas
         
-        self.neural_network_UI = UI(neural_network_canvas)
-        self.best_game_UI = UI(best_game_canvas)
+        self.chart_canvas.draw_chart([])
 
-        self.record_text = record_text
-        self.score_text = score_text
-        self.alive_text = alive_text
-        self.generation_text = generation_text
-
-        self.score = 0
-        self.record = 0
-        self.generation = 0
-
-        self.score_history: list[int] = []
+        self.record_label = record_label
+        self.score_label = score_label
+        self.alive_label = alive_label
+        self.generation_label = generation_label
+        
+        self.score_history: list[int] = [0]
 
         for snake_game in snake_games:
             snake_game.play()
 
         self.load_data()
         self.main_loop()
-
-    def update_generation(self, value: int):
-        self.generation = value
-        self.generation_text.set(GENERATION_TEXT.replace('0', str(value)))
-
-    def update_score(self, value: int):
-        self.score = value
-        self.score_text.set(SCORE_TEXT.replace('0', str(value)))
-
-    def update_record(self, value: int):
-        self.record = value
-        self.record_text.set(RECORD_TEXT.replace('0', str(value)))
-
-    def update_alive(self, value: int):
-        self.alive_text.set(ALIVE_TEXT.replace('0', str(value)))
 
     def transform_output(self, output: list[float]):
         if output[0] > 0:
@@ -72,6 +51,7 @@ class Manager:
 
     def main_loop(self):
         alive = 0
+        
         best_game_idx = 0
 
         for i, snake_game in enumerate(self.snake_games):
@@ -81,43 +61,36 @@ class Manager:
             alive += 1
             
             neural_network = snake_game.neural_network
+
+            output = neural_network.get_output(snake_game.get_data())
+            direction = self.transform_output(output)
             
-            neural_network.input_layer.set_values(snake_game.get_values())
-            output = self.transform_output(neural_network.calculate_output())
+            snake_game.on_key_event(Event(direction))
+
+            best_game = self.snake_games[best_game_idx]
             
-            event: Event = Event()
-            event.keysym = output
-            snake_game.on_key_event(event)
-
-            if (snake_game.score > self.record):
-                self.record = snake_game.score
-
-            if (snake_game.score > self.score):
-                self.score = snake_game.score
-
-            if self.snake_games[best_game_idx].is_paused:
-                best_game_idx = i
-
-            if snake_game.score > self.snake_games[best_game_idx].score:
+            if best_game.is_paused or snake_game.score > best_game.score:
                 best_game_idx = i
 
         best_game = self.snake_games[best_game_idx]
 
-        self.best_game_UI.draw_best_game(best_game)
-        self.neural_network_UI.draw_neural_network(best_game.neural_network)
+        self.best_game_canvas.draw_best_game(best_game)
+        self.neural_network_canvas.draw_neural_network(best_game.neural_network)
 
-        self.update_record(self.record)
-        self.update_score(self.score)
-        self.update_alive(alive)
+        score = max([max(snake_game.score, snake_game.best_score) for snake_game in self.snake_games])
+
+        self.score_label.update_number(score)
+        self.alive_label.update_number(alive)
 
         if alive == 0:
-            self.score_history.append(self.score)
-            self.chart_UI.draw_chart(self.score_history)
-
-            self.update_generation(self.generation + 1)
-            self.update_score(0)
-
             self.sort_snake_games()
+            
+            self.score_history.append(self.snake_games[0].best_score)
+            self.chart_canvas.draw_chart(self.score_history)
+
+            self.record_label.update_number(max(self.score_history))
+            self.generation_label.update_number(len(self.score_history) - 1)
+
             self.save_data()
             
             self.generate_mutations()
@@ -125,7 +98,7 @@ class Manager:
             for snake_game in self.snake_games:
                 snake_game.play()
 
-        self.snake_games[0].UI.after(SPEED, self.main_loop)
+        self.best_game_canvas.after(SPEED, self.main_loop)
 
     def save_data(self):
         best_players = self.snake_games[0:BEST_PLAYERS_SELECT]
@@ -133,8 +106,6 @@ class Manager:
 
         data = {
             'best_players_DNA': best_players_DNA,
-            'record': self.record,
-            'generation': self.generation,
             'score_history': self.score_history
         }
 
@@ -149,11 +120,12 @@ class Manager:
                 for i, DNA in enumerate(data['best_players_DNA']):
                     self.snake_games[i].neural_network.set_DNA(DNA)
                     
-                self.update_record(data['record'])
-                self.update_generation(data['generation'])
-
                 self.score_history = data['score_history']
-                self.chart_UI.draw_chart(self.score_history)
+                
+                self.chart_canvas.draw_chart(self.score_history)
+                
+                self.record_label.update_number(max(self.score_history))
+                self.generation_label.update_number(len(self.score_history) - 1)
 
                 self.generate_mutations()
         finally:

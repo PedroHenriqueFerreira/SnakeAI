@@ -1,6 +1,4 @@
-from tkinter import Canvas, Event
-
-from UI import UI
+from typing import TYPE_CHECKING
 
 from neural_network import NeuralNetwork
 
@@ -9,9 +7,13 @@ from snake_game.snake import Snake
 
 from config import *
 
+if TYPE_CHECKING:
+    from tkinter import Event
+    from UI import Canvas
+
 class SnakeGame:
-    def __init__(self, canvas: Canvas, is_AI: bool = False):
-        self.UI = UI(canvas)
+    def __init__(self, canvas: 'Canvas', is_AI: bool = False):
+        self.canvas = canvas
 
         self.draw_bg()
 
@@ -44,7 +46,7 @@ class SnakeGame:
 
             canvas.focus_set()
 
-    def on_key_event(self, event: Event):
+    def on_key_event(self, event: 'Event'):
         self.snake.change_direction(event.keysym)
 
         if self.is_paused:
@@ -110,7 +112,7 @@ class SnakeGame:
 
             self.energy -= 1
 
-        self.UI.after(SPEED, self.move)
+        self.canvas.after(SPEED, self.move)
 
     def get_available_coords(self):
         availableSpots: list[list[float]] = []
@@ -127,12 +129,12 @@ class SnakeGame:
         return availableSpots
 
     def draw_bg(self):
-        self.UI.draw_pixel([0, 0], GAME_SIZE, GREEN_COLORS[0], 'bg')
+        self.canvas.draw_pixel([0, 0], GAME_SIZE, GREEN_COLORS[0], 'bg')
 
         for i in range(2):
             for x in range(i, GAME_GRID, 2):
                 for y in range(1 - i, GAME_GRID, 2):
-                    self.UI.draw_pixel(
+                    self.canvas.draw_pixel(
                         [x, y],
                         GAME_SIZE / GAME_GRID,
                         GREEN_COLORS[1],
@@ -140,14 +142,14 @@ class SnakeGame:
                     )
 
     def draw_message(self, text: str):
-        self.UI.draw_pixel(
+        self.canvas.draw_pixel(
             [0, 0],
             GAME_SIZE,
             DARK_COLOR,
             'message'
         )
 
-        self.UI.draw_text(
+        self.canvas.draw_text(
             [GAME_SIZE / 2, GAME_SIZE / 2],
             LIGHT_COLOR,
             text,
@@ -156,9 +158,9 @@ class SnakeGame:
         )
 
     def undraw_message(self):
-        self.UI.clear('message')
+        self.canvas.delete('message')
 
-    def get_values(self):
+    def get_data(self):
         snake_head = self.snake.coords[-1]
         
         food_data: list[float] = []
@@ -166,14 +168,11 @@ class SnakeGame:
         for i in range(2):
             if self.food.coord[i] < snake_head[i]:
                 food_data.append(1)
-                food_data.append(0)
             elif self.food.coord[i] > snake_head[i]:
-                food_data.append(0)
-                food_data.append(1)
+                food_data.append(-1)
             else:
                 food_data.append(0)
-                food_data.append(0)
-        
+
         up = [snake_head[0] - 1, snake_head[1]]
         right = [snake_head[0], snake_head[1] + 1]
         down = [snake_head[0] + 1, snake_head[1]]
@@ -186,9 +185,7 @@ class SnakeGame:
         for coord in [up, right, down, left]:
             if coord in snake_body or -1 in coord or GAME_GRID in coord:
                 near_object_data.append(1)
-                near_object_data.append(0)
             else:
-                near_object_data.append(0)
                 near_object_data.append(0)
         
         return food_data + near_object_data

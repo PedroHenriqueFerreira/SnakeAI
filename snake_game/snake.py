@@ -1,4 +1,4 @@
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from config import *
 
@@ -14,7 +14,7 @@ class Snake:
         self.direction: Literal['up', 'right', 'down', 'left'] = 'right'
 
     def reset(self):
-        self.game.UI.clear('snake')
+        self.game.canvas.delete('snake')
 
         self.coords.clear()
 
@@ -41,7 +41,7 @@ class Snake:
     def add_coord(self, coord: list[float]):
         self.coords.append(coord)
 
-        self.game.UI.draw_pixel(
+        self.game.canvas.draw_pixel(
             coord,
             GAME_SIZE / GAME_GRID,
             BLUE_COLOR,
@@ -51,7 +51,7 @@ class Snake:
     def remove_coord(self, idx: int):
         self.coords.pop(idx)
         
-        self.game.UI.clear(self.game.UI.find('snake')[idx])
+        self.game.canvas.delete(self.game.canvas.find_withtag('snake')[idx])
 
     def get_initial_coord(self) -> list[list[float]]:
         x = int(GAME_GRID / 4)

@@ -1,20 +1,25 @@
 TITLE = 'Snake Game AI'
 
-SPEED = 100
+RECORD_TEXT = 'Maior pontuacao recorde: 0'
+SCORE_TEXT = 'Maior pontuacao da geracao: 0'   
+ALIVE_TEXT = 'Individuos vivos: 0'      
+GENERATION_TEXT = 'Geracoes passadas: 0'
+
+SPEED = 15
 LIVES = 3
 
-GAMES_ROW_GRID = 7
-GAMES_COLUMN_GRID = 11
+GAMES_ROW_GRID = 6
+GAMES_COLUMN_GRID = 10
 
-GAME_SIZE = 130
-BEST_GAME_SIZE = 308
+GAME_SIZE = 150
+BEST_GAME_SIZE = 300
 GAME_GRID = 20
 
-CHART_SIZE = 308
+CHART_SIZE = 300
 CHART_GRID = 10
 
-NEURAL_NETWORK_SIZE = 308
-NEURON_SIZE = 23
+NEURAL_NETWORK_SIZE = 300
+NEURON_SIZE = 27
 
 PADDING = 5
 
@@ -31,16 +36,11 @@ LIGHT_COLOR = '#FFF'
 DARK_COLOR = '#373737'
 BG_COLOR = '#292929'
 
-INPUT_LAYER_SIZE = 12
-HIDDEN_LAYER_SIZES = [8, 8]
+INPUT_LAYER_SIZE = 6
+HIDDEN_LAYER_SIZES = [5, 5]
 OUTPUT_LAYER_SIZE = 4
 ACTIVATION_FUNCTION = lambda x: max(0, x)
 
 BEST_PLAYERS_SELECT = 3
-
-RECORD_TEXT = 'Melhor pontuacao recorde: 0'
-SCORE_TEXT = 'Melhor pontuacao da geracao: 0'   
-ALIVE_TEXT = 'Individuos vivos: 0'      
-GENERATION_TEXT = 'Geracoes passadas: 0'
 
 DATA_FILE = './save'

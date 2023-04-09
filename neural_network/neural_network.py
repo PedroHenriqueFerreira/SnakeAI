@@ -45,15 +45,15 @@ class NeuralNetwork:
             
             match random_operation:
                 case 0:
-                    DNA[random_idx] = Random.generate_number()
+                    DNA[random_idx] = Random.get_number()
                 case 1:
-                    DNA[random_idx] += Random.generate_number() / 100
+                    DNA[random_idx] += Random.get_number() / 100
                 case 2:
-                    DNA[random_idx] -= Random.generate_number() / 100
+                    DNA[random_idx] -= Random.get_number() / 100
                 case 3:
-                    DNA[random_idx] *= Random.generate_tiny_number()
+                    DNA[random_idx] *= Random.get_tiny_number()
                 case 4:
-                    DNA[random_idx] /= Random.generate_tiny_number()
+                    DNA[random_idx] /= Random.get_tiny_number()
 
         self.set_DNA(DNA)
 
@@ -79,9 +79,8 @@ class NeuralNetwork:
                     neuron.wheights[i] = DNA[idx]
                     idx += 1
 
-    def calculate_output(self):
-        for layer_idx, layer in enumerate([*self.hidden_layers, self.output_layer]):
-            prev_layer = self.input_layer if layer_idx == 0 else self.hidden_layers[layer_idx - 1]
+    def get_output(self, input: list[float]):
+        self.input_layer.set_output(input)
         
         for layer_idx, layer in enumerate([*self.hidden_layers, self.output_layer]):
             prev_layer = self.input_layer if layer_idx == 0 else self.hidden_layers[layer_idx - 1]

@@ -33,10 +33,10 @@ class Layer:
             weights: list[float] = []
             
             for _ in range(self.prev_layer_size + 1):
-                weights.append(Random.generate_number())
+                weights.append(Random.get_number())
     
             neuron.wheights = weights
 
-    def set_values(self, values: list[float]):
+    def set_output(self, values: list[float]):
         for i in range(self.layer_size):
             self.neurons[i].output = values[i]  
