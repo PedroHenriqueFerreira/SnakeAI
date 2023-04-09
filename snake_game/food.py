@@ -5,7 +5,7 @@ from random import choice
 from config import *
 
 if TYPE_CHECKING:
-    from game import SnakeGame
+    from snake_game.snake_game import SnakeGame
 
 class Food:
     def __init__(self, game: 'SnakeGame'):

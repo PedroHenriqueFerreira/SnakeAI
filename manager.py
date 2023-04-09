@@ -38,23 +38,18 @@ class Manager:
         self.main_loop()
 
     def transform_output(self, output: list[float]):
-        if output[0] > 0:
-            return 'up'
-        elif output[1] > 0:
-            return 'right'
-        elif output[2] > 0:
-            return 'down'
-        elif output[3] > 0:
-            return 'left'
-
-        return 'right'
+        if output[0] > 0: return 'up'
+        elif output[1] > 0: return 'right'
+        elif output[2] > 0: return 'down'
+        elif output[3] > 0: return 'left'
+        else: return 'right'
 
     def main_loop(self):
         alive = 0
         
-        best_game_idx = 0
+        best_game_alive = self.snake_games[0]
 
-        for i, snake_game in enumerate(self.snake_games):
+        for snake_game in self.snake_games:
             if snake_game.is_paused:
                 continue
 
@@ -63,34 +58,34 @@ class Manager:
             neural_network = snake_game.neural_network
 
             output = neural_network.get_output(snake_game.get_data())
-            direction = self.transform_output(output)
             
-            snake_game.on_key_event(Event(direction))
-
-            best_game = self.snake_games[best_game_idx]
+            snake_game.on_key_event(Event(self.transform_output(output)))
             
-            if best_game.is_paused or snake_game.score > best_game.score:
-                best_game_idx = i
+            current_score = snake_game.snake.get_score()
+            best_score = best_game_alive.snake.get_score()
+            
+            if best_game_alive.is_paused or current_score > best_score:
+                best_game_alive = snake_game
 
-        best_game = self.snake_games[best_game_idx]
+        self.best_game_canvas.draw_best_game(best_game_alive)
+        self.neural_network_canvas.draw_neural_network(best_game_alive.neural_network)
+        
+        best_game = max(
+            self.snake_games, 
+            key=lambda snake_game: snake_game.best_score
+        )
 
-        self.best_game_canvas.draw_best_game(best_game)
-        self.neural_network_canvas.draw_neural_network(best_game.neural_network)
-
-        score = max([max(snake_game.score, snake_game.best_score) for snake_game in self.snake_games])
-
-        self.score_label.update_number(score)
+        self.score_label.update_number(best_game.best_score)
         self.alive_label.update_number(alive)
 
         if alive == 0:
-            self.sort_snake_games()
-            
-            self.score_history.append(self.snake_games[0].best_score)
+            self.score_history.append(best_game.best_score)
             self.chart_canvas.draw_chart(self.score_history)
 
             self.record_label.update_number(max(self.score_history))
             self.generation_label.update_number(len(self.score_history) - 1)
 
+            self.sort_snake_games()
             self.save_data()
             
             self.generate_mutations()
@@ -98,7 +93,7 @@ class Manager:
             for snake_game in self.snake_games:
                 snake_game.play()
 
-        self.best_game_canvas.after(SPEED, self.main_loop)
+        self.best_game_canvas.after(DELAY, self.main_loop)
 
     def save_data(self):
         best_players = self.snake_games[0:BEST_PLAYERS_SELECT]

@@ -27,23 +27,17 @@ class SnakeGame:
             ACTIVATION_FUNCTION
         )
 
-        self.energy = GAME_GRID ** 2
-
-        self.lives = LIVES
-
+        self.energy = 0
+        self.lives = 0
+        
         self.best_score = 0
-        self.score = 0
         
         self.is_paused = True
 
         self.draw_message('Jogar Snake')
 
         if not is_AI:
-            keys = ['<Up>', '<Right>', '<Down>', '<Left>', 'w', 'd', 's', 'a']
-
-            for key in keys:
-                canvas.bind(key, self.on_key_event)
-
+            canvas.bind('<Key>', self.on_key_event)
             canvas.focus_set()
 
     def on_key_event(self, event: 'Event'):
@@ -53,29 +47,26 @@ class SnakeGame:
             self.play()
 
     def play(self):
+        if self.lives == 0 or self.lives == LIVES:
+            self.lives = LIVES
+            self.best_score = 0
+        
+        self.energy = GAME_GRID ** 2
+        
         self.is_paused = False
 
         self.undraw_message()
 
-        self.energy = GAME_GRID ** 2
-
-        self.score = 0
-
         self.snake.reset()
         self.food.reset()
-
+            
         self.move()
 
     def on_game_over(self):
-        if self.score > self.best_score or self.lives == LIVES:
-            self.best_score = self.score
-
         self.lives -= 1
 
         if self.lives > 0:
             return self.play()
-
-        self.lives = LIVES
 
         self.is_paused = True
 
@@ -85,34 +76,29 @@ class SnakeGame:
         if self.is_paused:
             return
 
-        snake_head = self.snake.coords[-1].copy()
+        next_head = self.snake.get_next_head()
 
-        match(self.snake.direction):
-            case 'up': snake_head[1] -= 1
-            case 'down': snake_head[1] += 1
-            case 'left': snake_head[0] -= 1
-            case 'right': snake_head[0] += 1
-
-        isBodyColiding = snake_head in self.snake.coords
-        isWallColiding = -1 in snake_head or GAME_GRID in snake_head
+        isBodyColiding = next_head in self.snake.coords
+        isWallColiding = -1 in next_head or GAME_GRID in next_head
 
         if isBodyColiding or isWallColiding or self.energy == 0:
             return self.on_game_over()
 
-        self.snake.add_coord(snake_head)
+        self.snake.add_head(next_head)
 
-        if snake_head == self.food.coord:
-            self.score += 1
-
+        if next_head == self.food.coord:
             self.food.reset()
-
             self.energy = GAME_GRID ** 2
         else:
-            self.snake.remove_coord(0)
-
+            self.snake.remove_tail()
             self.energy -= 1
 
-        self.canvas.after(SPEED, self.move)
+        current_score = self.snake.get_score()
+
+        if current_score > self.best_score:
+            self.best_score = current_score
+
+        self.canvas.after(DELAY, self.move)
 
     def get_available_coords(self):
         availableSpots: list[list[float]] = []
@@ -161,9 +147,10 @@ class SnakeGame:
         self.canvas.delete('message')
 
     def get_data(self):
-        snake_head = self.snake.coords[-1]
+        *snake_body, snake_head = self.snake.coords
         
-        food_data: list[float] = []
+        food_data: list[int] = []
+        near_object_data: list[int] = []
         
         for i in range(2):
             if self.food.coord[i] < snake_head[i]:
@@ -177,10 +164,6 @@ class SnakeGame:
         right = [snake_head[0], snake_head[1] + 1]
         down = [snake_head[0] + 1, snake_head[1]]
         left = [snake_head[0], snake_head[1] - 1]
-        
-        snake_body = self.snake.coords[:-1]
-        
-        near_object_data: list[int] = []
         
         for coord in [up, right, down, left]:
             if coord in snake_body or -1 in coord or GAME_GRID in coord:

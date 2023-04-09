@@ -5,7 +5,7 @@ SCORE_TEXT = 'Maior pontuacao da geracao: 0'
 ALIVE_TEXT = 'Individuos vivos: 0'      
 GENERATION_TEXT = 'Geracoes passadas: 0'
 
-SPEED = 15
+DELAY = int(1000 / 250)
 LIVES = 3
 
 GAMES_ROW_GRID = 6
