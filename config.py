@@ -5,7 +5,7 @@ SCORE_TEXT = 'Maior pontuacao da geracao: 0'
 ALIVE_TEXT = 'Individuos vivos: 0'      
 GENERATION_TEXT = 'Geracoes passadas: 0'
 
-DELAY = int(1000 / 250)
+DELAY = int(1000 / 500)
 LIVES = 3
 
 GAMES_ROW_GRID = 6
@@ -19,7 +19,7 @@ CHART_SIZE = 300
 CHART_GRID = 10
 
 NEURAL_NETWORK_SIZE = 300
-NEURON_SIZE = 27
+NEURON_SIZE = 25
 
 PADDING = 5
 

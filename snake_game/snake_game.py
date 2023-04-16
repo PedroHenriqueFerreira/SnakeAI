@@ -159,7 +159,7 @@ class SnakeGame:
                 food_data.append(-1)
             else:
                 food_data.append(0)
-
+        
         up = [snake_head[0] - 1, snake_head[1]]
         right = [snake_head[0], snake_head[1] + 1]
         down = [snake_head[0] + 1, snake_head[1]]
